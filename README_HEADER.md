@@ -1,2 +1,1 @@
-This bundle contains OpenShift operator configuration files for deploying Hazelcast and PadoGrid. Hazelcast is deployed using the Hazelcast Operator downloaded from the 'hazelcast/hazelcast-operator' repo.
-
+This bundle deploys Hazelcast using Helm Charts. It also includes the PadoGrid container for ingesting mock data into the Hazelcast cluster.
