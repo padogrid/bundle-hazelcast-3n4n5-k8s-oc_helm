@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
+. $SCRIPT_DIR/.addonenv.sh
+
+EXECUTABLE="`basename $0`"
+
+if [ "$HELP" == "true" ]; then
+cat <<EOF
+
+NAME
+   $EXECUTABLE - Delete all resources
+
+SYNOPSIS
+   $EXECUTABLE [-oss] [-all] [-?]
+
+DESCRIPTION
+   Deletes all Hazelccast resources but the management persistent claim. To delete the persistent claim,
+   specify the '-all' option.
+
+OPTIONS
+   -oss
+             If specified, then deletes Hazelcast OSS resources, otherwise, Hazelcast Enterprise resources.
+
+EOF
+exit
+fi
+
+# Delete Hazelcast
+if [ "$OSS" == "true" ]; then
+   echo "Deleting OSS resources..."
+else
+   echo "Deleting Enterprise resources..."
+fi
+
+helm delete ${CHART_REFERENCE_NAME}
+pushd $APP_DIR/hazelcast > /dev/null
+oc delete -f secret.yaml
+popd > /dev/null
+
+# Delete the rest if ALL specified
+if [ "$ALL" == "true" ]; then
+   echo "Deleting pvc..."
+   if [ "$OSS" == "true" ]; then
+      oc delete pvc mancenter-storage-${CHART_REFERENCE_NAME}-hazelcast-mancenter-0
+   else
+      oc delete pvc mancenter-storage-${CHART_REFERENCE_NAME}-hazelcast-enterprise-mancenter-0
+   fi
+fi

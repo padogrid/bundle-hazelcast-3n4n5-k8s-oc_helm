@@ -10,28 +10,24 @@ buildNumber.properties
 # https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar
 
-# vi
-*.swp
-
-# PadoGrid workspace
+# PadoGrid
 /.addonenv.sh
-/initenv.sh
+initenv.sh
 /setenv.sh
-bundles
-lib
-plugins
-
-# PadoGrid workspace directories
 apps
+bundles
 clusters
 docker
-k8s
+#k8s
+lib
+plugins
 pods
 
-# Bundle specifics
+# App specifics
 archive
 log
 lib
 desktop
 setenv.sh0
 build
+k8s/oc_helm/hazelcast/secret.yaml

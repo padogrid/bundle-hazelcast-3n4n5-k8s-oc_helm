@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
+. $SCRIPT_DIR/.addonenv.sh
+
+EXECUTABLE="`basename $0`"
+
+if [ "$HELP" == "true" ]; then
+cat <<EOF
+
+NAME
+   $EXECUTABLE - Build a Hazelcast OpenShift Operator environment
+
+SYNOPSIS
+   $EXECUTABLE [-?]
+
+DESCRIPTION
+   Builds a Hazelcast OpenShift Operator environment by downloading all the necessary files and making adjustments
+   to the downloaded files. 
+
+DEFAULT:
+   ./$EXECUTABLE
+
+EOF
+exit
+fi
+
+#
+# Set license key
+#
+# Set license key
+IMDG_LICENSE_KEY_BASE64=$(echo -n "$IMDG_LICENSE_KEY" | base64)
+sed "s/<base64-hz-license-key>/$IMDG_LICENSE_KEY_BASE64/" "$APP_DIR/etc/hazelcast-enterprise/secret.yaml" > "$APP_DIR/hazelcast/secret.yaml"
+popd > /dev/null
+
+#
+# Display build information
+#
+cat <<EOF
+The 'secret.yaml' has been generated:
+
+   $APP_DIR/secret.yaml
+
+Apply the secret as follows:
+
+   cd_k8s heml 
+   oc apply -f secret.yaml
+
+Build complete.
+EOF

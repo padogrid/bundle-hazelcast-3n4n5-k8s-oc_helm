@@ -1,0 +1,29 @@
+#
+# Enter app specifics in this file.
+#
+
+# Cluster level variables:
+# ------------------------
+# BASE_DIR - padogrid base dir
+# ETC_DIR - Cluster etc dir
+
+# App level variables:
+# --------------------
+# APPS_DIR - <padogrid>/apps dir
+# APP_DIR - App base dir
+# APP_ETC_DIR - App etc dir
+
+#
+# Follow the instructions in README.md using the following environment variable.
+#
+export HAZELCAST_OPENSHIFT_DIR=$PADOGRID_WORKSPACE/k8s/oc_operator
+
+#
+# Default Kubernetes (OpenShift) project name.
+#
+export PROJECT_NAME="hazelcast-helm"
+
+#
+# Helm Chart reference name.
+#
+export CHART_REFERENCE_NAME=my-release

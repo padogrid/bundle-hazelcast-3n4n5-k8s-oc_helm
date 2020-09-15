@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
+. $SCRIPT_DIR/.addonenv.sh
+
+EXECUTABLE="`basename $0`"
+
+if [ "$HELP" == "true" ]; then
+cat <<EOF
+
+NAME
+   $EXECUTABLE - Delete all resrouces
+
+SYNOPSIS
+   $EXECUTABLE [-oss] [-all] [-?]
+
+DESCRIPTION
+   Deletes all but persistent claim resources. To delete persistent claims and 'local-storage'
+   specify the '-all' option.
+
+OPTIONS
+   -oss
+             If specified, then deletes Hazelcast OSS resources, otherwise, Hazelcast Enterprise resources.
+
+EOF
+exit
+fi
+
+# Delete PadoGrid
+echo "Deleting PadoGrid..."
+oc delete all -l app=padogrid
+
+# Delete Hazelcast
+echo "Deleting Hazelcast..."
+./stop_hazelcast $*
+
+# Delete the rest if ALL specified
+if [ "$ALL" == "true" ]; then
+   echo "Deleting pvc, pv, storage..."
+   oc delete pvc padogrid-pvc
+   if [ "$OSS" == "true" ]; then
+      oc delete pvc mancenter-storage-hz-hazelcast-mancenter-0
+   else
+      oc delete pvc mancenter-storage-hz-hazelcast-enterprise-mancenter-0
+   fi
+   oc delete -f $APP_DIR/padogrid/pv-hostPath.yaml
+fi
+echo ""
+echo "Cleanup complete."

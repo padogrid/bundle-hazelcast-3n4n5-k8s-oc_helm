@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
+. $SCRIPT_DIR/.addonenv.sh
+
+EXECUTABLE="`basename $0`"
+
+if [ "$HELP" == "true" ]; then
+cat <<EOF
+
+NAME
+   $EXECUTABLE - Start a Hazelcast using Helm charts
+
+SYNOPSIS
+   $EXECUTABLE [-oss] [-?]
+
+DESCRIPTION
+   Starts a Hazelcast cluster using Helm charts. The chart reference name is set in the 'setenv.sh' file
+   as $CHART_REFERENCE_NAME.
+
+OPTIONS
+   -oss
+             If specified launches Hazelcast OSS, otherwise, Hazelcast Enterprise which requires a license key.
+
+DEFAULT:
+   ./$EXECUTABLE
+
+SEE ALSO
+   https://github.com/hazelcast/charts
+
+EOF
+exit
+fi
+
+if [ "$OSS" == "true" ]; then
+   helm install ${CHART_REFERENCE_NAME} hazelcast/hazelcast
+else
+   pushd $APP_DIR/hazelcast > /dev/null
+   oc apply -f secret.yaml 
+   helm install --values=values.yaml \
+                --set hazelcast.licenseKeySecretName=hz-license-key-secret \
+                ${CHART_REFERENCE_NAME} hazelcast/hazelcast-enterprise
+   popd > /dev/null
+fi

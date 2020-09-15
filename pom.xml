@@ -6,27 +6,20 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>padogrid.addon</groupId>
-	<!-- @template: Enter your bundle name here -->
-	<artifactId>bundle-hazelcast-template</artifactId>
+	<artifactId>bundle-hazelcast-4-k8s-oc_helm</artifactId>
 	<packaging>pom</packaging>
         <name>${project.artifactId}</name>
 	<version>1.0.0</version>
-	<!-- @template: Enter your bundle description -->
-	<description>Bundle template</description>
+	<description>Hazelcast OpenShift Helm Chart Demo</description>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<hazelcast-addon.version>${project.version}</hazelcast-addon.version>
-                <skipTests>true</skipTests>
 	</properties>
 
 	<repositories>
-		<repository>
-			<id>Hazelcast Private Snapshot Repository</id>
-			<url>https://repository.hazelcast.com/snapshot/</url>
-		</repository>
 		<repository>
 			<id>Hazelcast Private Release Repository</id>
 			<url>https://repository.hazelcast.com/release/</url>
