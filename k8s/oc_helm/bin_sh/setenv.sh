@@ -21,7 +21,7 @@ export HAZELCAST_OPENSHIFT_DIR=$PADOGRID_WORKSPACE/k8s/oc_operator
 #
 # Default Kubernetes (OpenShift) project name.
 #
-export PROJECT_NAME="hazelcast-helm"
+export PROJECT_NAME="oc-helm"
 
 #
 # Helm Chart reference name.
