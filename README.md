@@ -14,7 +14,7 @@ install_bundle -download bundle-hazelcast-4-k8s-oc_helm
 
 This bundle installs PadoGrid and Hazelcast Kubernetes containers to run on CodeReady Container (CRC) or OpenShift Container Platform (OCP). It demonstrates how to start Hazelcast using Helm Charts and  use the PadoGrid pod to ingest mock data into Hazelcast.
 
-![OC Helm Charts Diagram](https://github.com/padogrid/bundle-hazelcast-4-k8s-oc_operator/blob/master/images/oc-operator.jpg)
+![OC Helm Charts Diagram](images/oc-helm.jpg)
 
 ## Required Software
 
