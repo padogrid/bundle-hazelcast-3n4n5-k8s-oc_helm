@@ -75,11 +75,11 @@ Let's create the `oc-helm` project. You can create a project with a different na
 oc new-project oc-helm
 ```
 
-## 3. CRC Users: Create Mountable Persistent Volumes in Master Node
+## 3. CRC Users (Optional): Create Mountable Persistent Volumes in Master Node
 
-**If you are connected to OCP then you can skip this section.**
+**This section is optional and only applies to CRC users.**
 
-If you are logged onto CRC running on your local PC instead of OpenShift Container Platform (OCP), then we need to create additional persistent volumes using **hostPath** for PadoGrid. Let’s create these volumes in the master node as follows.
+If you are logged onto CRC running on your local PC instead of OpenShift Container Platform (OCP), then to allow read/write permissions, we need to create additional persistent volumes using **hostPath** for PadoGrid. PadoGrid stores workspaces in the `/opt/padogrid/workspaces` directory, which can be optionally mounted to a persistent volume. Let’s create a couple of volumes in the master node as follows.
 
 ```bash
 # Login to the master node
@@ -130,14 +130,61 @@ users:
 
 By default, the `start_hazelcast` script launches Hazelcast Enterprise. To run, OSS, specify the `-oss` as shown in the sequent section.
 
-### Hazelcast OSS
+### 5.1. Hazelcast OSS
 
 ```bash
 cd_k8s oc_helm; cd bin_sh
 ./start_hazelcast -oss
 ```
 
-Wait till all three (3) Hazelcast services become available.
+Hazelcast has been configured with `securityContext` enabled. It might fail to start due to the security constraint set by `fsGroup`. Check the StatefulSet events using the describe command as follows.
+
+```bash
+oc describe statefulset oc-helm-hazelcast
+```
+
+Output:
+
+```console
+...
+Events:
+  Type     Reason        Age                 From                    Message
+  ----     ------        ----                ----                    -------
+  Warning  FailedCreate  22s (x14 over 63s)  statefulset-controller  create Pod oc-helm-hazelcast-0 in StatefulSet oc-helm-hazelcast failed error: pods "oc-helm-hazelcast-0" is forbidden: unable to validate against any security context constraint: [fsGroup: Invalid value: []int64{1000690000}: 1000690000 is not an allowed group spec.containers[0].securityContext.securityContext.runAsUser: Invalid value: 1000690000: must be in the ranges: [1000570000, 1000579999]]
+```
+
+If you see the warning event similar to the above then you need to enter the valid value in the `hazelcast/values.yaml` file as follows.
+
+```bash
+cd_k8s oc_helm_wan
+vi hazelcast/values.yaml
+```
+
+For our example, we would enter a valid value in the `values.yaml` file as follows.
+
+```yaml
+# Security Context properties
+securityContext:
+  # enabled is a flag to enable Security Context
+  enabled: true
+  # runAsUser is the user ID used to run the container
+  runAsUser: 1000570000
+  # runAsGroup is the primary group ID used to run all processes within any container of the pod
+  runAsGroup: 1000570000
+  # fsGroup is the group ID associated with the container
+  fsGroup: 1000570000
+...
+```
+
+After making the changes, restart (stop and start) the Hazelcast cluster as follow.
+
+```bash
+cd_k8s oc_helm_wan; cd bin_sh
+./stop_hazelcast
+./start hazelcast
+```
+
+View the Hazelcast services.
 
 ```bash
 oc get svc
@@ -146,15 +193,15 @@ oc get svc
 Output:
 
 ```console
-NAME                             TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)                        AGE
-my-release-hazelcast             ClusterIP      None            <none>        5701/TCP                       8s
-my-release-hazelcast-mancenter   LoadBalancer   172.30.239.38   <pending>     8080:30974/TCP,443:30853/TCP   8s
+NAME                          TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)                        AGE
+oc-helm-hazelcast             ClusterIP      None            <none>        5701/TCP                       8s
+oc-helm-hazelcast-mancenter   LoadBalancer   172.30.239.38   <pending>     8080:30974/TCP,443:30853/TCP   8s
 ```
 
 Run `oc expose svc` to expose services.
 
 ```bash
-oc expose my-release-hazelcast-mancenter
+oc expose oc-helm-hazelcast-mancenter
 ```
 
 Run `oc get route` to get the Management Center URL.
@@ -166,13 +213,13 @@ oc get route
 Output:
 
 ```console
-NAME                             HOST/PORT                                                                           PATH   SERVICES                         PORT   TERMINATION   WILDCARD
-my-release-hazelcast-mancenter   my-release-hazelcast-mancenter-oc-helm.apps.7919-681139.cor00005-2.cna.ukcloud.com          my-release-hazelcast-mancenter   http                 None
+NAME                          HOST/PORT                                                                           PATH   SERVICES                         PORT   TERMINATION   WILDCARD
+oc-helm-hazelcast-mancenter   oc-helm-hazelcast-mancenter-oc-helm.apps.7919-681139.cor00005-2.cna.ukcloud.com          oc-helm-hazelcast-mancenter   http                 None
 ```
 
-Management Center URL: http://my-release-hazelcast-mancenter-oc-helm.apps.7919-681139.cor00005-2.cna.ukcloud.com
+Management Center URL: http://oc-helm-hazelcast-mancenter-oc-helm.apps.7919-681139.cor00005-2.cna.ukcloud.com
 
-### Hazelcast Enterprise
+### 5.2. Hazelcast Enterprise
 
 Launch Hazelcast Enterprise Operator and Hazelcast.
 
@@ -181,7 +228,54 @@ cd_k8s oc_helm; cd bin_sh
 ./start_hazelcast
 ```
 
-Wait till all three (3) Hazelcast services become available.
+Hazelcast has been configured with `securityContext` enabled. It might fail to start due to the security constraint set by `fsGroup`. Check the StatefulSet events using the describe command as follows.
+
+```bash
+oc describe statefulset oc-helm-hazelcast
+```
+
+Output:
+
+```console
+...
+Events:
+  Type     Reason        Age                 From                    Message
+  ----     ------        ----                ----                    -------
+  Warning  FailedCreate  22s (x14 over 63s)  statefulset-controller  create Pod oc-helm-hazelcast-enterprise-0 in StatefulSet oc-helm-hazelcast-enterprise failed error: pods "oc-helm-hazelcast-enterprise-0" is forbidden: unable to validate against any security context constraint: [fsGroup: Invalid value: []int64{1000690000}: 1000690000 is not an allowed group spec.containers[0].securityContext.securityContext.runAsUser: Invalid value: 1000690000: must be in the ranges: [1000570000, 1000579999]]
+```
+
+If you see the warning event similar to the above then you need to enter the valid value in the `hazelcast/values.yaml` file as follows.
+
+```bash
+cd_k8s oc_helm_wan
+vi hazelcast/values.yaml
+```
+
+For our example, we would enter a valid value in the `values.yaml` file as follows.
+
+```yaml
+# Security Context properties
+securityContext:
+  # enabled is a flag to enable Security Context
+  enabled: true
+  # runAsUser is the user ID used to run the container
+  runAsUser: 1000570000
+  # runAsGroup is the primary group ID used to run all processes within any container of the pod
+  runAsGroup: 1000570000
+  # fsGroup is the group ID associated with the container
+  fsGroup: 1000570000
+...
+```
+
+After making the changes, restart (stop and start) the Hazelcast cluster as follow.
+
+```bash
+cd_k8s oc_helm_wan; cd bin_sh
+./stop_hazelcast
+./start hazelcast
+```
+
+View the Hazelcast services.
 
 ```bash
 oc get svc
@@ -190,15 +284,15 @@ oc get svc
 Output:
 
 ```console
-NAME                                        TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)                        AGE
-my-release-hazelcast-enterprise             ClusterIP      None            <none>        5701/TCP                       7m8s
-my-release-hazelcast-enterprise-mancenter   LoadBalancer   172.30.178.54   <pending>     8080:30179/TCP,443:32291/TCP   7m8s
+NAME                                     TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)                        AGE
+oc-helm-hazelcast-enterprise             ClusterIP      None            <none>        5701/TCP                       7m8s
+oc-helm-hazelcast-enterprise-mancenter   LoadBalancer   172.30.178.54   <pending>     8080:30179/TCP,443:32291/TCP   7m8s
 ```
 
-Run `oc expose svc` to expose services.
+Run `oc expose svc` to expose the Management Center service.
 
 ```bash
-oc expose svc hz-hazelcast-enterprise-mancenter
+oc expose svc oc-helm-hazelcast-enterprise-mancenter
 ```
 
 Run `oc get route` to get the Management Center URL.
@@ -210,11 +304,11 @@ oc get route
 Output:
 
 ```console
-NAME                                        HOST/PORT                                                                                      PATH   SERVICES                                    PORT   TERMINATION   WILDCARD
-my-release-hazelcast-enterprise-mancenter   my-release-hazelcast-enterprise-mancenter-oc-helm.apps.7919-681139.cor00005-2.cna.ukcloud.com          my-release-hazelcast-enterprise-mancenter   http                 None
+NAME                                     HOST/PORT                                                                                      PATH   SERVICES                                    PORT   TERMINATION   WILDCARD
+oc-helm-hazelcast-enterprise-mancenter   oc-helm-hazelcast-enterprise-mancenter-oc-helm.apps.7919-681139.cor00005-2.cna.ukcloud.com          oc-helm-hazelcast-enterprise-mancenter   http                 None
 ```
 
-Management Center URL: http://my-release-hazelcast-enterprise-mancenter-oc-helm.apps.7919-681139.cor00005-2.cna.ukcloud.com
+Management Center URL: http://oc-helm-hazelcast-enterprise-mancenter-oc-helm.apps.7919-681139.cor00005-2.cna.ukcloud.com
 
 ## 6. Launch PadoGrid
 
@@ -222,6 +316,7 @@ Management Center URL: http://my-release-hazelcast-enterprise-mancenter-oc-helm.
 
 ```bash
 cd_k8s oc_helm; cd bin_sh
+# If you 
 ./start_padogrid local-storage
 ```
 
@@ -249,23 +344,23 @@ cd_app perf_test
 vi etc/hazelcast-client.xml
 ```
 
-### Hazelcast OSS
+### 7.1. Hazelcast OSS
 
-Replace the `<cluster-members>` element with the following in the `etc/hazelcast-client.xml` file. `my-release-hazelcast` is service and  `oc-helm` is the project name.
+Replace the `<cluster-members>` element with the following in the `etc/hazelcast-client.xml` file. `oc-helm-hazelcast` is service and  `oc-helm` is the project name.
 
 ```xml
                 <kubernetes enabled="true">
-                        <service-dns>my-release-hazelcast.oc-helm.svc.cluster.local</service-dns>
+                        <service-dns>oc-helm-hazelcast.oc-helm.svc.cluster.local</service-dns>
                 </kubernetes>
 ```
 
-### Hazelcast Enterprise
+### 7.2. Hazelcast Enterprise
 
-Replace the `<cluster-members>` element with the following in the `etc/hazelcast-client.xml` file. `my-release-hazelcast-enterprise` is service and  `oc-helm` is the project name.
+Replace the `<cluster-members>` element with the following in the `etc/hazelcast-client.xml` file. `oc-helm-hazelcast-enterprise` is service and  `oc-helm` is the project name.
 
 ```xml
                 <kubernetes enabled="true">
-                        <service-dns>my-release-hazelcast-enterprise.oc-helm.svc.cluster.local</service-dns>
+                        <service-dns>oc-helm-hazelcast-enterprise.oc-helm.svc.cluster.local</service-dns>
                 </kubernetes>
 ```
 
@@ -309,14 +404,14 @@ exit
 
 ## 8. Teardown
 
-### Hazelcast OSS
+### 8.1. Hazelcast OSS
 
 ```bash
 cd_k8s oc_helm; cd bin_sh
 ./cleanup -all -oss
 ```
 
-### Hazelcast Enterprise
+### 8.2. Hazelcast Enterprise
 
 ```bash
 cd_k8s oc_helm; cd bin_sh
