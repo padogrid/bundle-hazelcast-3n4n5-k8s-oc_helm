@@ -1,0 +1,35 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+labels:
+  template: padogrid-template
+  app: ${APP_NAME}
+metadata:
+  annotations:
+    description: PadoGrid
+  name: padogrid
+
+objects:
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: ${APP_NAME}
+  spec:
+    replicas: 1
+    selector:
+      name: ${APP_NAME}
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          name: ${APP_NAME}
+      spec:
+        containers:
+        - image: docker.io/padogrid/padogrid:0.9.3-SNAPSHOT-3
+          name: padogrid
+parameters:
+- description: The application name
+  displayName: Application Name
+  name: APP_NAME
+  required: true
+  value: padogrid
