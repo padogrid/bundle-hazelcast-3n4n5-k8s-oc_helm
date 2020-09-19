@@ -26,4 +26,4 @@ export PROJECT_NAME="oc-helm"
 #
 # Helm Chart reference name.
 #
-export CHART_REFERENCE_NAME=my-release
+export CHART_REFERENCE_NAME=oc-helm
