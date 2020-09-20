@@ -340,7 +340,7 @@ cd_k8s oc_helm; cd bin_sh
 ./login_padogrid_pod
 ```
 
-The `start_padogrid` script automatcially set the Hazelcast service name and the namespace for constructing the DNS address needed by the `perf_test` app to connect to the Hazelcast cluster. We can simply login to the PadoGrid pod and run the `perf_test` app requiring no configuration.
+The `start_padogrid` script automatcially sets the Hazelcast service and the namespace for constructing the DNS address needed by the `perf_test` app to connect to the Hazelcast cluster. This allows us to simply login to the PadoGrid pod and run the `perf_test` app.
 
 *If `perf_test` fails to connect to the Hazelcst cluster then you may need to manually configure the Hazelcast client as described in the [next section](#8-manually-configuring-perf_test).*
 
@@ -387,7 +387,7 @@ exit
 
 ## 8. Manually Configuring `perf_test`
 
-The `test_ingestion` may fail to connect to the Hazelcast cluster if you started the PadoGrid pod before the Hazelcast cluster is started. In that case, you can simply restart PadoGrid. If it still fails even after the Hazelcast cluster has been started first, then you can manually enter the DNS address in the `etc/hazelcast-client-k8s.xml` file as described below.
+The `test_ingestion` script may fail to connect to the Hazelcast cluster if you started the PadoGrid pod before the Hazelcast cluster is started. In that case, you can simply restart PadoGrid. If it still fails even after the Hazelcast cluster has been started first, then you can manually enter the DNS address in the `etc/hazelcast-client-k8s.xml` file as described below.
 
 ```bash
 cd_app perf_test
@@ -396,7 +396,7 @@ vi etc/hazelcast-client-k8s.xml
 
 ### 8.1. Hazelcast OSS
 
-Enter the following in the `etc/hazelcast-client-k8s.xml` file. `oc-helm-hazelcast` is service and  `oc-helm` is the project name.
+Enter the following in the `etc/hazelcast-client-k8s.xml` file. `oc-helm-hazelcast` is the service and  `oc-helm` is the project name.
 
 ```xml
                 <kubernetes enabled="true">
@@ -406,7 +406,7 @@ Enter the following in the `etc/hazelcast-client-k8s.xml` file. `oc-helm-hazelca
 
 ### 8.2. Hazelcast Enterprise
 
-Enter the following in the `etc/hazelcast-client-k8s.xml` file. `oc-helm-hazelcast-enterprise` is service and  `oc-helm` is the project name.
+Enter the following in the `etc/hazelcast-client-k8s.xml` file. `oc-helm-hazelcast-enterprise` is the service and  `oc-helm` is the project name.
 
 ```xml
                 <kubernetes enabled="true">
