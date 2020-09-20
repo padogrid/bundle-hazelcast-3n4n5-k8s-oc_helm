@@ -45,4 +45,3 @@ parameters:
   name: HAZELCAST_SERVICE
   required: false
   value: oc-helm-hazelcast
-

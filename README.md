@@ -312,15 +312,19 @@ Management Center URL: http://oc-helm-hazelcast-enterprise-mancenter-oc-helm.app
 
 ## 6. Launch PadoGrid
 
-### CRC Users
+### 6.1. CRC Users
 
 ```bash
 cd_k8s oc_helm; cd bin_sh
-# If you 
+
+# If you have not created local-storage
+./start_padogrid
+
+# If you have created local-storage (see Section 3)
 ./start_padogrid local-storage
 ```
 
-### OCP Users
+### 6.2. OCP Users
 
 ```bash
 cd_k8s oc_helm; cd bin_sh
@@ -336,38 +340,17 @@ cd_k8s oc_helm; cd bin_sh
 ./login_padogrid_pod
 ```
 
-Create the `perf_test` app and edit `hazelcast-client.xml` from the PadoGrid pod.
+The `start_padogrid` script automatcially set the Hazelcast service name and the namespace for constructing the DNS address needed by the `perf_test` app to connect to the Hazelcast cluster. We can simply login to the PadoGrid pod and run the `perf_test` app requiring no configuration.
+
+*If `perf_test` fails to connect to the Hazelcst cluster then you may need to manually configure the Hazelcast client as described in the [next section](#8-manually-configuring-perf_test).*
+
+Create and run the `perf_test` app.
 
 ```bash
 create_app
-cd_app perf_test
-vi etc/hazelcast-client.xml
-```
-
-### 7.1. Hazelcast OSS
-
-Replace the `<cluster-members>` element with the following in the `etc/hazelcast-client.xml` file. `oc-helm-hazelcast` is service and  `oc-helm` is the project name.
-
-```xml
-                <kubernetes enabled="true">
-                        <service-dns>oc-helm-hazelcast.oc-helm.svc.cluster.local</service-dns>
-                </kubernetes>
-```
-
-### 7.2. Hazelcast Enterprise
-
-Replace the `<cluster-members>` element with the following in the `etc/hazelcast-client.xml` file. `oc-helm-hazelcast-enterprise` is service and  `oc-helm` is the project name.
-
-```xml
-                <kubernetes enabled="true">
-                        <service-dns>oc-helm-hazelcast-enterprise.oc-helm.svc.cluster.local</service-dns>
-                </kubernetes>
-```
-
-Ingest blob data into Hazelcast.
-
-```bash
 cd_app perf_test; cd bin_sh
+
+# Ingest blob data into Hazelcast.
 ./test_ingestion -run
 ```
 
@@ -402,9 +385,38 @@ Exit from the PadoGrid pod.
 exit
 ```
 
-## 8. Teardown
+## 8. Manually Configuring `perf_test`
+
+The `test_ingestion` may fail to connect to the Hazelcast cluster if you started the PadoGrid pod before the Hazelcast cluster is started. In that case, you can simply restart PadoGrid. If it still fails even after the Hazelcast cluster has been started first, then you can manually enter the DNS address in the `etc/hazelcast-client-k8s.xml` file as described below.
+
+```bash
+cd_app perf_test
+vi etc/hazelcast-client-k8s.xml
+```
 
 ### 8.1. Hazelcast OSS
+
+Enter the following in the `etc/hazelcast-client-k8s.xml` file. `oc-helm-hazelcast` is service and  `oc-helm` is the project name.
+
+```xml
+                <kubernetes enabled="true">
+                        <service-dns>oc-helm-hazelcast.oc-helm.svc.cluster.local</service-dns>
+                </kubernetes>
+```
+
+### 8.2. Hazelcast Enterprise
+
+Enter the following in the `etc/hazelcast-client-k8s.xml` file. `oc-helm-hazelcast-enterprise` is service and  `oc-helm` is the project name.
+
+```xml
+                <kubernetes enabled="true">
+                        <service-dns>oc-helm-hazelcast-enterprise.oc-helm.svc.cluster.local</service-dns>
+                </kubernetes>
+```
+
+## 9. Teardown
+
+### 9.1. Hazelcast OSS
 
 ```bash
 cd_k8s oc_helm; cd bin_sh

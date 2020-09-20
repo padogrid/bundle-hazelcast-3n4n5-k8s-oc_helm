@@ -31,13 +31,14 @@ EOF
 exit
 fi
 
+pushd $APP_DIR/hazelcast > /dev/null
 if [ "$OSS" == "true" ]; then
-   helm install ${CHART_REFERENCE_NAME} hazelcast/hazelcast
+   helm install --values=values.yaml \
+                ${CHART_REFERENCE_NAME} hazelcast/hazelcast
 else
-   pushd $APP_DIR/hazelcast > /dev/null
    oc apply -f secret.yaml 
    helm install --values=values.yaml \
                 --set hazelcast.licenseKeySecretName=hz-license-key-secret \
                 ${CHART_REFERENCE_NAME} hazelcast/hazelcast-enterprise
-   popd > /dev/null
 fi
+popd > /dev/null
