@@ -27,9 +27,22 @@ objects:
         containers:
         - image: docker.io/padogrid/padogrid:0.9.3-SNAPSHOT-3
           name: padogrid
+          env:
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: HAZELCAST_SERVICE
+            value: ${HAZELCAST_SERVICE}
 parameters:
 - description: The application name
   displayName: Application Name
   name: APP_NAME
   required: true
   value: padogrid
+- description: Hazelcast service
+  displayName: Hazelcast service
+  name: HAZELCAST_SERVICE
+  required: false
+  value: oc-helm-hazelcast
+
