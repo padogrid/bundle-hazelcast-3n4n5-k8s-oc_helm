@@ -53,7 +53,7 @@ fi
 HAZELCAST_SERVICE="$(oc get svc | grep 5701 | awk '{ print $1 }')"
 
 if [ "$HAZELCAST_SERVICE" == "" ]; then
-  HAZELCAST_SERVICE="$PROJECT_NAME-hazelcast"
+  HAZELCAST_SERVICE="$PROJECT_NAME-hazelcast-enterprise"
 fi
 
 if [ "$STORAGE_CLASS_NAME" == "" ]; then
