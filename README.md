@@ -1,8 +1,8 @@
 # Hazelcast OpenShift Helm Charts
 
-This bundle deploys Hazelcast using Helm Charts. It also includes the PadoGrid container for ingesting mock data into the Hazelcast cluster.
+This bundle deploys Hazelcast using Helm Charts with Promtheus metrics enabled. It also includes the PadoGrid container for ingesting mock data into the Hazelcast cluster.
 
-[https://github.com/hazelcast/charts](https://github.com/hazelcast/charts)
+For Prometheus instructions plese see the following link: [Configuring Prometheus Metrics](README-PROM.md).
 
 ## Installing Bundle
 
@@ -423,9 +423,14 @@ cd_k8s oc_helm; cd bin_sh
 ./cleanup -all -oss
 ```
 
-### 8.2. Hazelcast Enterprise
+### 9.2. Hazelcast Enterprise
 
 ```bash
 cd_k8s oc_helm; cd bin_sh
 ./cleanup -all
 ```
+
+## 10. References
+
+1. Hazelcast Charts, [https://github.com/hazelcast/charts](https://github.com/hazelcast/charts)
+2. Configuring Prometheus Metrics, [README-PROM.md](README-PROM.md).
