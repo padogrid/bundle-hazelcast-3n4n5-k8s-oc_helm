@@ -40,10 +40,6 @@ thanos-ruler-user-workload-0          3/3     Running   0          4h57m
 thanos-ruler-user-workload-1          3/3     Running   0          4h53m
 ```
 
-## Hazelcast
-
-Start Hazelcast.
-
 ## Grant user permissions using web console
 
 1. **User Management > Role Bindings > Create Binding**
@@ -78,10 +74,16 @@ NAME                AGE
 hazelcast-monitor   2m28s
 ```
 
+## Hazelcast
+
+Start Hazelcast.
+
+:exclamation: Hazelcast must be started after the above steps have been completed. Otherwise, you may not see Hazelcast metrics.
+
 ## Access the metrics as a developer
 
 1. From the web console, select **Monitoring > Metrics**
-2. Select **Show PromQL* and enter queries.
+2. Select **Show PromQL** and enter queries.
 
 PromQL Exmaples:
 
