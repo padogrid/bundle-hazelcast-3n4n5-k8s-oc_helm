@@ -41,8 +41,10 @@ oc_helm/
 ├── hazelcast
 │   └── values.yaml
 └── padogrid
-    ├── padogrid.yaml
-    └── pv-hostPath.yaml
+│   ├── padogrid.yaml
+│   └── pv-hostPath.yaml
+└── prometheus
+    └── service-monitor.yaml
 ```
 
 ## 1. Build Local Environment
