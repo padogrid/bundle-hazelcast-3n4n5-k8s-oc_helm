@@ -48,11 +48,11 @@ Start Hazelcast.
 
 1. **User Management > Role Bindings > Create Binding**
 2. In **Binding Type**, select the "Namespace Role Binding" type.
-3. In **Name**, enter a name for the binding.
-4. In **Namespace**, select the names space.
+3. In **Name**, enter a name for the binding, e.g., "oc-helm-prometheus".
+4. In **Namespace**, select the names space, e.g., "oc-helm".
 5. In **Role Name**, enter **monitoring-edit**.
 6. In **Subject**, select **User**.
-7. In **Subject Name**, enter the name of the user, i.e., `dspark@sorintlab.com`.
+7. In **Subject Name**, enter the name of the user, e.g., `dspark@sorintlab.com`.
 8. Confirm the role binding.
 
 ## Grant user permissions
