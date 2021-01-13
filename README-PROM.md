@@ -1,7 +1,7 @@
 # Configuring Prometheus Metrics On OCP 4.5
 
 - The project name, **oc-helm**, is used in this article. Make sure to replace it with your project name.
-- Note that the label, `helm.sh/chart: hazelcast-enterprise-3.4.10`, specified in the `prometheuse/service-monitor.yaml` file is used to discover the Hazelcast metrics service. Make sure to change it to your Hazelcast metrics service label.
+- Note that the label, `helm.sh/chart: hazelcast-enterprise-3.5.3`, specified in the `prometheuse/service-monitor.yaml` file is used to discover the Hazelcast metrics service. Make sure to change it to your Hazelcast metrics service label.
 
 ## 1. Enable service monitoring
 
