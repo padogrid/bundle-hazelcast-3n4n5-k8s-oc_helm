@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    k8s-app: hazelcast-monitor
+  name: hazelcast-monitor
+spec:
+  endpoints:
+  - interval: 15s
+    port: metrics
+    scheme: http
+  selector:
+    matchLabels:
+      helm.sh/chart: hazelcast-enterprise-3.5.3
