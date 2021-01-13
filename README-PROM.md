@@ -3,7 +3,7 @@
 - The project name, **oc-helm**, is used in this article. Make sure to replace it with your project name.
 - Note that the label, `helm.sh/chart: hazelcast-enterprise-3.4.10`, specified in the `prometheuse/service-monitor.yaml` file is used to discover the Hazelcast metrics service. Make sure to change it to your Hazelcast metrics service label.
 
-## Enable service monitoring
+## 1. Enable service monitoring
 
 ```bash
 oc -n openshift-monitoring edit configmap cluster-monitoring-config
@@ -40,7 +40,7 @@ thanos-ruler-user-workload-0          3/3     Running   0          4h57m
 thanos-ruler-user-workload-1          3/3     Running   0          4h53m
 ```
 
-## Grant user permissions using web console
+## 2. Grant user permissions using web console
 
 1. **User Management > Role Bindings > Create Binding**
 2. In **Binding Type**, select the "Namespace Role Binding" type.
@@ -51,7 +51,7 @@ thanos-ruler-user-workload-1          3/3     Running   0          4h53m
 7. In **Subject Name**, enter the name of the user, e.g., `dspark@sorintlab.com`.
 8. Confirm the role binding.
 
-## Grant user permissions
+## 3. Grant user permissions
 
 ```bash
 oc policy add-role-to-user <role> <user> -n <namespace>
@@ -60,7 +60,51 @@ oc policy add-role-to-user <role> <user> -n <namespace>
 oc policy add-role-to-user monitoring-edit dspark@sorintlab.com -n oc-helm
 ```
 
-## Setup metrics collection
+## 4. Setup metrics collection
+
+First, check the label
+
+```bash
+oc describe svc oc-helm-hazelcast-enterprise-metrics
+```
+
+Output:
+
+```console
+Name:              oc-helm-hazelcast-enterprise-metrics
+Namespace:         oc-helm
+Labels:            app.kubernetes.io/instance=oc-helm
+                   app.kubernetes.io/managed-by=Helm
+                   app.kubernetes.io/name=hazelcast-enterprise
+                   helm.sh/chart=hazelcast-enterprise-3.5.3
+...
+```
+
+Edit `prometheus/service-monitor.yaml` and set the selector label, `helm.sh/chart`.
+
+```bash
+cd_k8s oc-helm
+vi prometheus/service-monitor.yaml
+```
+
+For our example, set `helm.sh/chart: hazelcast-enterprise-3.5.3` at the end of the file as shown below.
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    k8s-app: hazelcast-monitor
+  name: hazelcast-monitor
+spec:
+  endpoints:
+  - interval: 15s
+    port: metrics
+    scheme: http
+  selector:
+    matchLabels:
+      helm.sh/chart: hazelcast-enterprise-3.5.3
+```
 
 Apply `prometheus/service-monitor.yaml`
 
@@ -74,13 +118,21 @@ NAME                AGE
 hazelcast-monitor   2m28s
 ```
 
-## Hazelcast
+## 5. Start Hazelcast
 
 Start Hazelcast.
 
 :exclamation: Hazelcast must be started after the above steps have been completed. Otherwise, you may not see Hazelcast metrics.
 
-## Access the metrics as a developer
+## 6. Access the metrics
+
+### 6.1 As Administrator
+
+1. From the web console, select **Monitoring > Metrics**
+2. You can enter queries directly from the "Add Query" text fields.
+3. Optionally, you can use the Prometheus UI by selecting the "Prometheus UI" link at the top.
+
+### 6.2 As Developer
 
 1. From the web console, select **Monitoring > Metrics**
 2. Select **Show PromQL** and enter queries.
