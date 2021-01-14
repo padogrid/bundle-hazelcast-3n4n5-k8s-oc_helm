@@ -120,7 +120,7 @@ hazelcast-monitor   2m28s
 
 ## 5. Start Hazelcast
 
-Start Hazelcast.
+Start Hazelcast. See instructions in [bundle-hazelcast-4-k8s-oc_helm](README.md).
 
 :exclamation: Hazelcast must be started after the above steps have been completed. Otherwise, you may not see Hazelcast metrics.
 
