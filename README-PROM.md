@@ -137,22 +137,27 @@ Start Hazelcast. See instructions in [bundle-hazelcast-4-k8s-oc_helm](README.md)
 1. From the web console, select **Monitoring > Metrics**
 2. Select **Show PromQL** and enter queries.
 
-PromQL Exmaples:
+## 7. PromQL Exmaples:
 
-### Hazelcast cluster size (member count)
+### 7.1. Hazelcast cluster size (member count)
+
+The member count or the cluster size can be monitored as follows.
 
 ```console
 max(com_hazelcast_Metrics_size)
 ```
 
-### Memory/CPU
+### 7.2. Memory/CPU
+
+Memory and CPU usages can be monitored as shown below. For example, the percentage of the total used heap provides a single metric overview of the cluster health.
 
 ```console
-# Aggregate used heap sizes
-sum(com_hazelcast_Metrics_usedHeap)
+# Total used heap percentage
+sum(com_hazelcast_Metrics_usedHeap)/sum(com_hazelcast_Metrics_maxHeap)
 
-# Max CPU
-max(process_cpu_seconds_total)
+# Max CPU- process (member) & OS
+max(com_hazelcast_Metrics_processCpuLoad)
+max(com_hazelcast_Metrics_systemCpuLoad)
 
 # Max on-heap max
 max(jvm_memory_bytes_max{area="heap"})
@@ -164,7 +169,29 @@ max(jvm_memory_bytes_used{area="heap"})
 max(jvm_memory_bytes_used{area="nonheap"})
 ```
 
-### GC
+### 7.3. GC
+
+Hazelcast should be run with G1 or CMS garbage colletor. The following metrics are available for both garbage collectors. Garbage collector specifics are shown in the subsequent sections. They are equivalent.
+
+```
+# Hazelcast's Minor GC average milliseconds
+com_hazelcast_Metrics_minorTime/com_hazelcast_Metrics_minorCount
+
+# Hazelcast's Major GC average milliseconds
+com_hazelcast_Metrics_majorTime/com_hazelcast_Metrics_majorCount
+```
+
+#### 7.3.1. G1
+
+```
+# Young Generation - Minor GC average seconds
+jvm_gc_collection_seconds_sum{gc="G1 Young Generation"}/jvm_gc_collection_seconds_count{gc="G1 Young Generation"}
+
+# Old Generation - Major GC average seconds
+jvm_gc_collection_seconds_sum{gc="G1 Old Generation"}/jvm_gc_collection_seconds_count{gc="G1 Oldmax(process_cpu_seconds_total)max(jvm_memory_bytes_used{area="nonheap"}) Generation"}
+```
+
+#### 7.3.2. CMS
 
 ```
 # Minor GC average seconds
@@ -174,14 +201,19 @@ jvm_gc_collection_seconds_sum{gc="PS Scavenge"}/jvm_gc_collection_seconds_count{
 jvm_gc_collection_seconds_sum{gc="PS MarkSweep"}/jvm_gc_collection_seconds_count{gc="PS MarkSweep"}
 ```
 
-### Clients
+### 7.4. Clients
 
 ```
 # Max client connections
+max(com_hazelcast_Metrics_connectionListenerCount)
+
+# The following seems to be always 0. Use the one above instead.
 max(com_hazelcast_Metrics_clientCount)
 ```
 
-### File descriptors
+### 7.5. File Descriptors
+
+Hazelcast opens many file descriptors. If it reaches the max count then the Hazelcast member will become unresponsive.
 
 ```
 # Open FD count
@@ -191,7 +223,9 @@ com_hazelcast_Metrics_openFileDescriptorCount
 com_hazelcast_Metrics_maxFileDescriptorCount
 ```
 
-### Maps
+### 7.6. Maps
+
+You can monitor the number of entries in each map.
 
 ```
 # Max put count (eligibility and profile are IMaps)
@@ -207,7 +241,7 @@ max(com_hazelcast_Metrics_backupEntryCount{tag0="\"name=eligibility\""})
 max(com_hazelcast_Metrics_backupEntryCount{tag0="\"name=profile\""})
 ```
 
-## Access all services as a cluster administrator
+## 8. List Monitoring URLs
 
 ```bash
 oc -n openshift-monitoring get routes
@@ -226,7 +260,7 @@ thanos-querier      thanos-querier-openshift-monitoring.apps.7919-681139.cor0000
 - Prometheus metrics: http://prometheus-k8s-openshift-monitoring.apps.7919-681139.cor00005-2.cna.ukcloud.com/metrics
 - Thanos: http://thanos-querier-openshift-monitoring.apps.7919-681139.cor00005-2.cna.ukcloud.com
 
-## Access Hazelcast metrics
+## 9. Access Hazelcast metrics
 
 Expose the metrics service.
 
@@ -257,7 +291,7 @@ oc-helm-hazelcast-enterprise-metrics   oc-helm-hazelcast-enterprise-metrics-oc-h
 
 - Hazelcast metrics: http://oc-helm-hazelcast-enterprise-metrics-oc-helm.apps.7919-681139.cor00005-2.cna.ukcloud.com
 
-## Teardown
+## 10. Teardown
 
 ```bash
 # Stop Hazelcast first then delete the following.
