@@ -173,7 +173,7 @@ max(jvm_memory_bytes_used{area="nonheap"})
 
 Hazelcast should be run with G1 or CMS garbage colletor. The following metrics are available for both garbage collectors. Garbage collector specifics are shown in the subsequent sections. They are equivalent.
 
-```
+```console
 # Hazelcast's Minor GC average milliseconds
 com_hazelcast_Metrics_minorTime/com_hazelcast_Metrics_minorCount
 
@@ -183,7 +183,7 @@ com_hazelcast_Metrics_majorTime/com_hazelcast_Metrics_majorCount
 
 #### 7.3.1. G1
 
-```
+```console
 # Young Generation - Minor GC average seconds
 jvm_gc_collection_seconds_sum{gc="G1 Young Generation"}/jvm_gc_collection_seconds_count{gc="G1 Young Generation"}
 
@@ -193,7 +193,7 @@ jvm_gc_collection_seconds_sum{gc="G1 Old Generation"}/jvm_gc_collection_seconds_
 
 #### 7.3.2. CMS
 
-```
+```console
 # Minor GC average seconds
 jvm_gc_collection_seconds_sum{gc="PS Scavenge"}/jvm_gc_collection_seconds_count{gc="PS Scavenge"}
 
@@ -203,7 +203,7 @@ jvm_gc_collection_seconds_sum{gc="PS MarkSweep"}/jvm_gc_collection_seconds_count
 
 ### 7.4. Clients
 
-```
+```console
 # Max client connections
 max(com_hazelcast_Metrics_connectionListenerCount)
 
@@ -215,7 +215,7 @@ max(com_hazelcast_Metrics_clientCount)
 
 Hazelcast opens many file descriptors. If it reaches the max count then the Hazelcast member will become unresponsive.
 
-```
+```console
 # Open FD count
 com_hazelcast_Metrics_openFileDescriptorCount
 
@@ -227,7 +227,7 @@ com_hazelcast_Metrics_maxFileDescriptorCount
 
 You can monitor the number of entries in each map.
 
-```
+```console
 # Max put count (eligibility and profile are IMaps)
 max(com_hazelcast_Metrics_putCount{tag0="\"name=eligibility\""})
 max(com_hazelcast_Metrics_putCount{tag0="\"name=profile\""})
