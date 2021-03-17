@@ -3,11 +3,11 @@ securityContext:
   # enabled is a flag to enable Security Context
   enabled: true
   # runAsUser is the user ID used to run the container
-  runAsUser: 1000570000
+  runAsUser: 1000740000
   # runAsGroup is the primary group ID used to run all processes within any container of the pod
-  runAsGroup: 1000570000
+  runAsGroup: 1000740000
   # fsGroup is the group ID associated with the container
-  fsGroup: 1000570000
+  fsGroup: 1000740000
 
 metrics:
   enabled: true
@@ -40,3 +40,6 @@ hazelcast:
               enabled: true
             DATA:
               enabled: true
+
+mancenter:
+  javaOpts: -Dhazelcast.mc.prometheusExporter.enabled=true -Dhazelcast.mc.jmx.enabled=true

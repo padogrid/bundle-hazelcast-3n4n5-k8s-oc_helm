@@ -83,7 +83,9 @@ Labels:            app.kubernetes.io/instance=oc-helm
 Edit `prometheus/service-monitor.yaml` and set the selector label, `helm.sh/chart`.
 
 ```bash
-cd_k8s oc-helm
+# Note that the k8s name in PadoGrid is 'oc_helm', not 'oc-helm', following the
+# PadoGrid's underscore naming convention.
+cd_k8s oc_helm
 vi prometheus/service-monitor.yaml
 ```
 

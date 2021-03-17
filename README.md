@@ -158,7 +158,7 @@ Events:
 If you see the warning event similar to the above then you need to enter the valid value in the `hazelcast/values.yaml` file as follows.
 
 ```bash
-cd_k8s oc_helm_wan
+cd_k8s oc_helm
 vi hazelcast/values.yaml
 ```
 
@@ -181,9 +181,9 @@ securityContext:
 After making the changes, restart (stop and start) the Hazelcast cluster as follow.
 
 ```bash
-cd_k8s oc_helm_wan; cd bin_sh
+cd_k8s oc_helm; cd bin_sh
 ./stop_hazelcast
-./start hazelcast
+./start_hazelcast
 ```
 
 View the Hazelcast services.
@@ -249,7 +249,7 @@ Events:
 If you see the warning event similar to the above then you need to enter the valid value in the `hazelcast/values.yaml` file as follows.
 
 ```bash
-cd_k8s oc_helm_wan
+cd_k8s oc_helm
 vi hazelcast/values.yaml
 ```
 
@@ -272,9 +272,9 @@ securityContext:
 After making the changes, restart (stop and start) the Hazelcast cluster as follow.
 
 ```bash
-cd_k8s oc_helm_wan; cd bin_sh
+cd_k8s oc_helm; cd bin_sh
 ./stop_hazelcast
-./start hazelcast
+./start_hazelcast
 ```
 
 View the Hazelcast services.
