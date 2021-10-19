@@ -51,6 +51,8 @@ if [ "$1" != "" ] && [ "$1" != "-oss" ]; then
    VERSION=$1 
 elif [ "$2" != "" ]; then
    VERSION=$2 
+else
+   VERSION=latest
 fi
 pushd $APP_DIR/hazelcast > /dev/null
 if [ "$OSS" == "true" ]; then
