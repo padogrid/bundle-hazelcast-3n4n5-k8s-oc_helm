@@ -7,7 +7,7 @@ For Prometheus instructions plese see the following link: [Configuring Prometheu
 ## Installing Bundle
 
 ```bash
-install_bundle -download bundle-hazelcast-4-k8s-oc_helm
+install_bundle -download bundle-hazelcast-3n4n5-k8s-oc_helm
 ```
 
 ## Use Case
@@ -18,7 +18,6 @@ This bundle installs PadoGrid and Hazelcast Kubernetes containers to run on Code
 
 ## Required Software
 
-- PadoGrid 0.9.3-SNAPSHOT+ (09/06/2020)
 - OpenShift Client, **oc**
 - [Helm](https://helm.sh/docs/intro/install/), **helm**
 
