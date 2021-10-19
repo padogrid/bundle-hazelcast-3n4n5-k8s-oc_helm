@@ -31,7 +31,7 @@ EXAMPLES:
    # Start the latest Hazelcast OSS 
    ./$EXECUTABLE -oss
 
-   # Start Hazelcast OSS version 4.2.1.
+   # Start Hazelcast OSS version 4.2.1
    ./$EXECUTABLE -oss 4.2.1
 
    # Start the latest Hazelcast Enterprise

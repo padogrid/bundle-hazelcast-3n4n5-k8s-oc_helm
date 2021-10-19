@@ -21,6 +21,9 @@ OPTIONS
    -oss
              If specified, then deletes Hazelcast OSS resources, otherwise, Hazelcast Enterprise resources.
 
+   -all
+             If specified, then deletes all resources including the persistent claims and 'local-storage'.
+
 EOF
 exit
 fi
