@@ -11,7 +11,7 @@ NAME
    $EXECUTABLE - Start a Hazelcast using Helm charts
 
 SYNOPSIS
-   $EXECUTABLE [-oss] [-?]
+   $EXECUTABLE [-oss] [hazelcast_version] [-?]
 
 DESCRIPTION
    Starts a Hazelcast cluster using Helm charts. The chart reference name is set in the 'setenv.sh' file
@@ -21,8 +21,24 @@ OPTIONS
    -oss
              If specified launches Hazelcast OSS, otherwise, Hazelcast Enterprise which requires a license key.
 
+   hazelcast_version
+             Hazelcast image version. If unspecified, then the latest Hazelcast image version is used.
+
 DEFAULT:
    ./$EXECUTABLE
+
+EXAMPLES:
+   # Start the latest Hazelcast OSS 
+   ./$EXECUTABLE -oss
+
+   # Start Hazelcast OSS version 4.2.1.
+   ./$EXECUTABLE -oss 4.2.1
+
+   # Start the latest Hazelcast Enterprise
+   ./$EXECUTABLE
+
+   # Start Hazelcast Enterprise 4.2.1
+   ./$EXECUTABLE 4.2.1
 
 SEE ALSO
    https://github.com/hazelcast/charts
@@ -31,14 +47,21 @@ EOF
 exit
 fi
 
+if [ "$1" != "" ] && [ "$1" != "-oss" ]; then
+   VERSION=$1 
+elif [ "$2" != "" ]; then
+   VERSION=$2 
+fi
 pushd $APP_DIR/hazelcast > /dev/null
 if [ "$OSS" == "true" ]; then
    helm install --values=values.yaml \
+                --set image.tag=$VERSION \
                 ${CHART_REFERENCE_NAME} hazelcast/hazelcast
 else
    oc apply -f secret.yaml 
    helm install --values=values.yaml \
                 --set hazelcast.licenseKeySecretName=hz-license-key-secret \
+                --set image.tag=$VERSION \
                 ${CHART_REFERENCE_NAME} hazelcast/hazelcast-enterprise
 fi
 popd > /dev/null
