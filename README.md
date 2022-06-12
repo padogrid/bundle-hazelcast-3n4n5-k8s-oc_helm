@@ -6,6 +6,8 @@ For Prometheus instructions plese see the following link: [Configuring Prometheu
 
 ## Installing Bundle
 
+![PadoGrid](https://github.com/padogrid/padogrid/raw/develop/images/padogrid-3d-16x16.png) [*Driven by PadoGrid*](https://github.com/padogrid)
+
 ```bash
 install_bundle -download bundle-hazelcast-3n4n5-k8s-oc_helm
 ```
