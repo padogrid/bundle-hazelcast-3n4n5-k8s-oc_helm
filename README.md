@@ -351,6 +351,11 @@ The `start_padogrid` script automatcially sets the Hazelcast service and the nam
 Create and run the `perf_test` app.
 
 ```bash
+# First, change cluster context to the default cluster, 'myhz' so
+# that we can create and run Hazelcast apps.
+switch_cluster myhz
+
+# Create 'perf_test' app
 create_app
 cd_app perf_test; cd bin_sh
 
