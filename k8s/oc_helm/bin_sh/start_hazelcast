@@ -14,15 +14,17 @@ SYNOPSIS
    $EXECUTABLE [-oss] [hazelcast_version] [-?]
 
 DESCRIPTION
-   Starts a Hazelcast cluster using Helm charts. The chart reference name is set in the 'setenv.sh' file
-   as $CHART_REFERENCE_NAME.
+   Starts a Hazelcast cluster using Helm charts. The chart reference name is set in the
+   'setenv.sh' file as $CHART_REFERENCE_NAME.
 
 OPTIONS
    -oss
-             If specified launches Hazelcast OSS, otherwise, Hazelcast Enterprise which requires a license key.
+             If specified launches Hazelcast OSS, otherwise, Hazelcast Enterprise which requires 
+             a license key.
 
    hazelcast_version
-             Hazelcast image version. If unspecified, then the latest Hazelcast image version is used.
+             Hazelcast image version. If unspecified, then the latest Hazelcast image version is
+             used.
 
 DEFAULT:
    ./$EXECUTABLE
@@ -55,15 +57,21 @@ else
    VERSION=latest
 fi
 pushd $APP_DIR/hazelcast > /dev/null
+oc apply -f hz-secret.yaml
+
+HELM_OPTS="--values=values.yaml --set image.tag=$VERSION"
+
+if [ -f mc-secret.yaml ]; then
+   oc apply -f mc-secret.yaml
+   HELM_OPTS="$HELM_OPTS --set mancenter.licenseKeySecretName=mc-license-key-secret"
+fi
 if [ "$OSS" == "true" ]; then
-   helm install --values=values.yaml \
-                --set image.tag=$VERSION \
+   helm install $HELM_OPTS \
+                --set mancenter.licenseKeySecretName=mc-license-key-secret \
                 ${CHART_REFERENCE_NAME} hazelcast/hazelcast
 else
-   oc apply -f secret.yaml 
-   helm install --values=values.yaml \
+   helm install $HELM_OPS \
                 --set hazelcast.licenseKeySecretName=hz-license-key-secret \
-                --set image.tag=$VERSION \
                 ${CHART_REFERENCE_NAME} hazelcast/hazelcast-enterprise
 fi
 popd > /dev/null

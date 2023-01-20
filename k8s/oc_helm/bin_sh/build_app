@@ -39,27 +39,41 @@ echo ""
 #
 # Set license key
 #
-# Set license key
-
+IMDG_LICENSE_KEY_BASE64=""
+MC_LICENSE_KEY_BASE64=""
 if [[ ${OS_NAME} == DARWIN* ]]; then
-   IMDG_LICENSE_KEY_BASE64=$(echo -n "$IMDG_LICENSE_KEY" | base64)
+   if [ "$IMDG_LICENSE_KEY" != "" ]; then
+      IMDG_LICENSE_KEY_BASE64=$(echo -n "$IMDG_LICENSE_KEY" | base64)
+   fi
+   if [ "$MC_LICENSE_KEY" != "" ]; then
+      MC_LICENSE_KEY_BASE64=$(echo -n "$MC_LICENSE_KEY" | base64)
+   fi
 else
-   IMDG_LICENSE_KEY_BASE64=$(echo -n "$IMDG_LICENSE_KEY" | base64 -w 0)
+   if [ "$IMDG_LICENSE_KEY" != "" ]; then
+      IMDG_LICENSE_KEY_BASE64=$(echo -n "$IMDG_LICENSE_KEY" | base64 -w 0)
+   fi
+   if [ "$MC_LICENSE_KEY" != "" ]; then
+      MC_LICENSE_KEY_BASE64=$(echo -n "$MC_LICENSE_KEY" | base64 -w 0)
+   fi
 fi
-sed "s/<base64-hz-license-key>/$IMDG_LICENSE_KEY_BASE64/" "$APP_DIR/etc/hazelcast-enterprise/secret.yaml" > "$APP_DIR/hazelcast/secret.yaml"
+if [ "$IMDG_LICENSE_KEY_BASE64" != "" ]; then
+   sed "s/<base64-hz-license-key>/$IMDG_LICENSE_KEY_BASE64/" "$APP_DIR/etc/hazelcast-enterprise/hz-secret.yaml" > "$APP_DIR/hazelcast/hz-secret.yaml"
+fi
+if [ "$MC_LICENSE_KEY_BASE64" != "" ]; then
+   sed "s/<base64-hz-license-key>/$MC_LICENSE_KEY_BASE64/" "$APP_DIR/etc/hazelcast-enterprise/mc-secret.yaml" > "$APP_DIR/hazelcast/mc-secret.yaml"
+fi
 
 #
 # Display build information
 #
-cat <<EOF
-The 'secret.yaml' has been generated:
-
-   $APP_DIR/secret.yaml
-
-Apply the secret as follows:
-
-   cd_k8s heml 
-   oc apply -f secret.yaml
-
-Build complete.
-EOF
+if [ "$IMDG_LICENSE_KEY_BASE64" != "" ] || [ "$IMDG_LICENSE_KEY_BASE64" != "" ]; then
+   echo "Generated license secret files:"
+   if [ "$IMDG_LICENSE_KEY_BASE64" != "" ]; then
+      echo "   $APP_DIR/hazelcast/hz-secret.yaml"
+   fi
+   if [ "$MC_LICENSE_KEY_BASE64" != "" ]; then
+      echo "   $APP_DIR/hazelcast/mc-secret.yaml"
+   fi
+   echo ""
+fi
+echo "Build complete."
