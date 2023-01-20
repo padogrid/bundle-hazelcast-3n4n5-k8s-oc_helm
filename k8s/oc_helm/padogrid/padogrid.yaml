@@ -3,6 +3,7 @@ kind: Template
 labels:
   template: padogrid-persistent-template
   app: ${APP_NAME}
+  role: hazelcast
 metadata:
   annotations:
     description: PadoGrid persistent volume and claim.
@@ -20,36 +21,37 @@ objects:
       requests:
         storage: ${VOLUME_CAPACITY}
     storageClassName: ${STORAGE_CLASS_NAME}
-  
-- apiVersion: v1
-  kind: DeploymentConfig
+
+- apiVersion: apps/v1
+  kind: Deployment
   metadata:
     name: ${APP_NAME}
+    labels:
+      app: padogrid
   spec:
     replicas: 1
     selector:
-      name: ${APP_NAME}
+      matchLabels:
+        app: padogrid
+        role: jupyterlab
     strategy:
       type: Recreate
     template:
       metadata:
         labels:
-          name: ${APP_NAME}
+          app: padogrid
+          role: jupyterlab
       spec:
         securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - ALL
-          privileged: false
-          readOnlyRootFilesystem: false
-          runAsNonRoot: true
           runAsUser: 1001
           runAsGroup: 1001
           fsGroup: 1001
         containers:
-        - image: docker.io/padogrid/padogrid
+        - image: docker.io/padogrid/padogrid:latest
           name: padogrid
+          ports:
+          - name: jupyterlab
+            containerPort: 8888
           volumeMounts:
           - mountPath: /opt/padogrid/workspaces
             name: ${APP_NAME}-data
@@ -60,10 +62,29 @@ objects:
                 fieldPath: metadata.namespace
           - name: HAZELCAST_SERVICE
             value: ${HAZELCAST_SERVICE}
+          - name: HAZELCAST_CLUSTER_NAME
+            value: ${HAZELCAST_CLUSTER_NAME}
+          - name: PADOGRID_HTTPS_ENABLED
+            value: ${PADOGRID_HTTPS_ENABLED}
         volumes:
         - name: ${APP_NAME}-data
           persistentVolumeClaim:
             claimName: ${APP_NAME}-pvc
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: ${PADOGRID_SERVICE_NAME}
+  spec:
+    type: ClusterIP
+    clusterIP: None
+    selector:
+      app: padogrid
+      role: jupyterlab
+    ports:
+    - protocol: TCP
+      port: 8888
+
 parameters:
 - description: The application name
   displayName: Application Name
@@ -83,4 +104,19 @@ parameters:
   displayName: Hazelcast service
   name: HAZELCAST_SERVICE
   required: false
-  value: oc-helm-hazelcast-enterprise
+  value: hazelcast
+- description: Hazelcast cluster name
+  displayName: Hazelcast cluster name
+  name: HAZELCAST_CLUSTER_NAME
+  required: false
+  value: dev
+- description: JupyterLab self-signed certificate
+  displayName: PadoGrid HTTPS
+  name: PADOGRID_HTTPS_ENABLED
+  required: false
+  value: "false"
+- description: PadoGrid service
+  displayName: PadoGrid service
+  name: PADOGRID_SERVICE_NAME
+  required: false
+  value: padogrid-service

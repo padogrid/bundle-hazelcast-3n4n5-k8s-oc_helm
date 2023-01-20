@@ -17,6 +17,9 @@ buildNumber.properties
 # Jupyter
 .ipynb*
 
+# VS Code
+workspace.code-workspace
+
 # PadoGrid
 /.addonenv.sh
 initenv.sh
@@ -32,6 +35,7 @@ plugins
 pods
 .workspace
 .cluster
+.gitignore0
 
 # App specifics
 archive

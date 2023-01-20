@@ -3,6 +3,7 @@ SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
 . $SCRIPT_DIR/.addonenv.sh
 
 EXECUTABLE="`basename $0`"
+PADOGRID_URL=http://padogrid-service-$APP_NAME.apps-crc.testing
 
 if [ "$1" == "-?" ]; then
 cat <<EOF
@@ -17,7 +18,7 @@ DESCRIPTION
    Launches a PadoGrid pod with the name 'padogrid'. Padogrid keeps workspaces in the '/opt/padogrid/workspaces'
    directory. You can optionally mount that directory to a persistent volume as follows.
 
-   CRC - For CRC, the storage_class must be 'local_storage'. If unspecified, then the persistent volume claim
+   CRC - For CRC, the storage_class value must be 'local_storage'. If unspecified, then the persistent volume claim
          is not made.
 
    OCP - For OCP, you can specify any available storage class. If not specified then the default storage
@@ -26,6 +27,24 @@ DESCRIPTION
    Execute the following command to list the available storage classes.
 
       oc get storageclass
+
+   Once a PadoGrid pod is started, you can login to the pod using one of the following options.
+
+   To login to PadoGrid, use one of the following options.
+
+   - Browser
+       URL: $PADOGRID_URL
+       Password: padogrid
+
+   - Shell
+       ./login_padogrid_pod
+
+   Once logged in, use the 'perf_test' app to ingest data as follows.
+
+      switch_cluster myhz
+      create_app
+      cd_app perf_test/bin_sh
+      ./test_ingestion -run
 
 OPTIONS
    storage_class
@@ -38,7 +57,7 @@ OPTIONS
              and the container file system is used instead. 
 
 SEE ALSO
-   padogrid/padogrid.yaml, padogrid/padogrid-no-pvc.yaml
+   login_padogrid_pod(1), padogrid/padogrid.yaml, padogrid/padogrid-no-pvc.yaml
 
 EOF
 exit
@@ -50,7 +69,7 @@ if [ "$STORAGE_CLASS_NAME" == "" ]; then
    STORAGE_CLASS_NAME=$DEFAULT_STORAGE_CLASS_NAME
 fi
 
-HAZELCAST_SERVICE="$(oc get svc | grep 5701 | awk '{ print $1 }')"
+HAZELCAST_SERVICE="$(oc get svc | grep -i ClusterIP | grep 5701 | awk '{ print $1 }')"
 
 if [ "$HAZELCAST_SERVICE" == "" ]; then
   HAZELCAST_SERVICE="$PROJECT_NAME-hazelcast-enterprise"
@@ -61,3 +80,27 @@ if [ "$STORAGE_CLASS_NAME" == "" ]; then
 else
   oc process -p HAZELCAST_SERVICE=$HAZELCAST_SERVICE -f $APP_DIR/padogrid/padogrid.yaml -o yaml -p=STORAGE_CLASS_NAME=$STORAGE_CLASS_NAME | oc create -f -
 fi
+
+# Expose the PadoGrid service
+echo "Exposing PadoGrid JupyterLab service (route)..."
+oc expose svc/padogrid-service
+
+cat <<EOF
+
+To login to PadoGrid, use one of the following options.
+
+- Browser
+    URL: $PADOGRID_URL
+    Password: padogrid
+
+- Shell
+    ./login_padogrid_pod
+
+Once logged in, use the 'perf_test' app to ingest data as follows.
+
+   switch_cluster myhz
+   create_app
+   cd_app perf_test/bin_sh
+   ./test_ingestion -run
+
+EOF

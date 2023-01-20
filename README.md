@@ -113,22 +113,38 @@ cd_k8s oc_helm; cd padogrid
 oc create -f pv-hostPath.yaml
 ```
 
-## 4. Add User to `anyuid` SCC (Security Context Constraints)
+## 4. Add User to `nonroot` SCC (Security Context Constraints)
 
-PadoGrid runs as a non-root user that requires read/write permissions to the persistent volume. Let's add your project's **default** user to the **anyuid** SCC.
+PadoGrid runs as a non-root user (padogrid/1001) that requires read/write permissions to the persistent volume. Let's add your project's default user to the `nonroot` SCC.
+
+You can use one of the following methods to add the user to `nonroot` SSC.
+
+### 4.1. Using Editor
 
 ```bash
-oc edit scc anyuid
+oc edit scc nonroot
 ```
 
-**anyuid SCC:**
+**nonroot SCC:**
 
-Add your project under the users: section. For example, if your project is `oc-helm` then add the following line.
+Add your project under the`users:` section. For our example, since our project name is **oc-helm**, we would enter the following.
 
 ```yaml
 users:
 - system:serviceaccount:oc-helm:default
 ```
+
+### 4.2. Using CLI
+
+```bash
+# See if user can use nonroot
+oc adm policy who-can use scc nonroot
+
+# Add user
+oc adm policy add-scc-to-user nonroot system:serviceaccount:oc-helm:default
+```
+
+:exclamation: Note that depending on the `oc` version, e.g., **v4.5.9**, `oc get scc nonroot -o yaml` may not show the user you added using CLI. This is also true for the user added using the editor, which may not be shown in the output of `oc adm policy who-can use scc nonroot`.
 
 ## 5. Launch Hazelcast
 
