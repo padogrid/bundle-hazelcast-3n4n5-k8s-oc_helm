@@ -39,12 +39,14 @@ oc_helm/
 │   └── stop_padogrid
 ├── etc
 │   └── hazelcast-enterprise
-│       └── secret.yaml
+│       ├── hz-secret.yaml
+│       └── mc-secret.yaml
 ├── hazelcast
 │   └── values.yaml
-└── padogrid
-│   ├── padogrid.yaml
-│   └── pv-hostPath.yaml
+├── padogrid
+│   ├── padogrid-no-pvc.yaml
+│   ├── padogrid.yaml
+│   └── pv-hostPath.yaml
 └── prometheus
     └── service-monitor.yaml
 ```
