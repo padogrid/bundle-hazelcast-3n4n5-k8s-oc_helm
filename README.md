@@ -206,6 +206,12 @@ cd_k8s oc_helm; cd bin_sh
 ./start_hazelcast
 ```
 
+Watch pods.
+
+```bash
+oc get pods -w
+```
+
 View the Hazelcast services.
 
 ```bash
@@ -297,6 +303,14 @@ cd_k8s oc_helm; cd bin_sh
 ./start_hazelcast
 ```
 
+Watch pods.
+
+```bash
+oc get pods -w
+```
+
+### 5.2.1. Hazelcast Management Center
+
 View the Hazelcast services.
 
 ```bash
@@ -310,6 +324,8 @@ NAME                                     TYPE           CLUSTER-IP      EXTERNAL
 oc-helm-hazelcast-enterprise             ClusterIP      None            <none>        5701/TCP                       7m8s
 oc-helm-hazelcast-enterprise-mancenter   LoadBalancer   172.30.178.54   <pending>     8080:30179/TCP,443:32291/TCP   7m8s
 ```
+
+#### 5.2.1.1. HTTP
 
 Run `oc expose svc` to expose the Management Center service.
 
@@ -330,7 +346,51 @@ NAME                                     HOST/PORT                              
 oc-helm-hazelcast-enterprise-mancenter   oc-helm-hazelcast-enterprise-mancenter-oc-helm.apps.7919-681139.cor00005-2.cna.ukcloud.com          oc-helm-hazelcast-enterprise-mancenter   http                 None
 ```
 
-Management Center URL: http://oc-helm-hazelcast-enterprise-mancenter-oc-helm.apps.7919-681139.cor00005-2.cna.ukcloud.com
+HTTP URL: <http://oc-helm-hazelcast-enterprise-mancenter-oc-helm.apps.7919-681139.cor00005-2.cna.ukcloud.com>
+
+#### 5.2.1.2. HTTPS
+
+We can use the edge termination to access the management center via HTTPS. The [Red Hat OpenShift documentation](https://docs.openshift.com/dedicated/networking/routes/secured-routes.html#nw-ingress-creating-an-edge-route-with-a-custom-certificate_secured-routes) states, "With an edge route, the Ingress Controller terminates TLS encryption before forwarding traffic to the destination pod." This essentially means, beyond the termination point, the internal network traffic is not encrypted so that we can run the Management Center pod without HTTPS enabled.
+
+First, we need to create a self-signed certificate. The following creates an RSA key and certificate `etc/ssl` directory. Note that it sets CN (Common Name) to `*.demo.com` so that we can use it as a domain name for assigning any hosts.
+
+```bash
+cd_k8s oc_helm
+mkdir etc/ssl
+openssl req -newkey rsa:4096 -x509 -sha256 -days 365 -nodes -out etc/ssl/mancenter.crt -keyout etc/ssl/mancenter.key -subj "/CN=*.demo.com"
+```
+
+Now, expose the management center service with the edge termination. Let's assign the hostname to `server1.demo.com` as follows.
+
+```bash
+oc create route edge --service=oc-helm-hazelcast-enterprise-mancenter --hostname=padogrid.demo.com --key etc/ssl/mancenter.key --cert etc/ssl/mancenter.crt
+```
+
+Since `server1.demo.com` is a fictitious host, we need to add it in the `/etc/hosts` file. Edit `/etc/hosts` and append it to your host's IP address.
+
+
+```bash
+sudo vi /etc/hosts
+```
+
+Append `server1.demo.com` to your host IP in `etc/hosts`:
+
+```console
+192.168.56.2 myhost server1.demo.com
+```
+
+Run `oc get route` to get the Management Center URL:
+
+```bash
+oc get route
+```
+
+```console
+NAME                                     HOST/PORT          PATH   SERVICES                                 PORT   TERMINATION   WILDCARD
+oc-helm-hazelcast-enterprise-mancenter   server1.demo.com          oc-helm-hazelcast-enterprise-mancenter   http   edge          None
+```
+
+HTTPS URL: <https://server1.demo.com>
 
 ## 6. Launch PadoGrid
 

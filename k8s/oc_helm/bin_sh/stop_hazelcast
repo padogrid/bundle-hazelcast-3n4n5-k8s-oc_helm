@@ -34,7 +34,12 @@ fi
 
 helm delete ${CHART_REFERENCE_NAME}
 pushd $APP_DIR/hazelcast > /dev/null
-oc delete -f secret.yaml
+if [ -f hz-secret.yaml ]; then
+   oc delete -f hz-secret.yaml
+fi
+if [ -f mc-secret.yaml ]; then
+   oc delete -f mc-secret.yaml
+fi
 popd > /dev/null
 
 # Delete the rest if ALL specified

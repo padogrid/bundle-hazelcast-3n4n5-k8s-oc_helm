@@ -56,21 +56,25 @@ elif [ "$2" != "" ]; then
 else
    VERSION=latest
 fi
-pushd $APP_DIR/hazelcast > /dev/null
-oc apply -f hz-secret.yaml
 
+pushd $APP_DIR/hazelcast > /dev/null
 HELM_OPTS="--values=values.yaml --set image.tag=$VERSION"
 
+if [ -f hz-secret.yaml ]; then
+   oc apply -f hz-secret.yaml
+   HELM_OPTS="$HELM_OPTS --set hazelcast.licenseKeySecretName=hz-license-key-secret"
+fi
 if [ -f mc-secret.yaml ]; then
    oc apply -f mc-secret.yaml
    HELM_OPTS="$HELM_OPTS --set mancenter.licenseKeySecretName=mc-license-key-secret"
 fi
+
 if [ "$OSS" == "true" ]; then
    helm install $HELM_OPTS \
                 --set mancenter.licenseKeySecretName=mc-license-key-secret \
                 ${CHART_REFERENCE_NAME} hazelcast/hazelcast
 else
-   helm install $HELM_OPS \
+   helm install $HELM_OPTS \
                 --set hazelcast.licenseKeySecretName=hz-license-key-secret \
                 ${CHART_REFERENCE_NAME} hazelcast/hazelcast-enterprise
 fi
