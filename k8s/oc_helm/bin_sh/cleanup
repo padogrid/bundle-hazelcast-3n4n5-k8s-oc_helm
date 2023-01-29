@@ -29,12 +29,14 @@ exit
 fi
 
 # Delete PadoGrid
-echo "Deleting PadoGrid..."
 ./stop_padogrid $@
 
 # Delete Hazelcast
-echo "Deleting Hazelcast..."
 ./stop_hazelcast $@
+
+# Delete all routes
+echo "Deleting all routes..."
+oc delete route --all=true
 
 echo ""
 echo "Cleanup complete."

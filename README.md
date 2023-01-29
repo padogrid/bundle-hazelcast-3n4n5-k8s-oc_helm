@@ -229,7 +229,7 @@ oc-helm-hazelcast-mancenter   LoadBalancer   172.30.239.38   <pending>     8080:
 Run `oc expose svc` to expose services.
 
 ```bash
-oc expose oc-helm-hazelcast-mancenter
+oc expose -l app=hazelcast svc oc-helm-hazelcast-mancenter
 ```
 
 Run `oc get route` to get the Management Center URL.
@@ -332,7 +332,7 @@ We can open Management Center via HTTP or HTTPS. Follow the instructions in one 
 Run `oc expose svc` to expose the Management Center service.
 
 ```bash
-oc expose svc oc-helm-hazelcast-enterprise-mancenter
+oc expose -l app=hazelcast svc oc-helm-hazelcast-enterprise-mancenter
 ```
 
 Run `oc get route` to get the Management Center URL.
