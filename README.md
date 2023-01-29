@@ -425,7 +425,7 @@ You can use the PadoGrid pod as a client to the Hazelcast cluster. There are thr
 The PadoGrid container is equipped with JupyterLab. The `start_padogrid` script has already exposed the `padogrid-service` so that we can immediately login to PadoGrid from the browser.
 
 ```bash
-kubectl get route padogrid-service
+oc get route padogrid-service
 ```
 
 Output:
@@ -479,7 +479,7 @@ tls-padogrid   padogrid.demo.com          padogrid-service   http   edge        
 From your shell, run the `login_padogrid_pod` script as follows.
 
 ```bash
-cd_k8s kubectl_helm/bin_sh
+cd_k8s oc_helm/bin_sh
 ./login_padogrid_pod
 ```
 
