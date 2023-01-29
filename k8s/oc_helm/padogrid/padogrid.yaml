@@ -75,15 +75,18 @@ objects:
   kind: Service
   metadata:
     name: ${PADOGRID_SERVICE_NAME}
+    labels:
+      app: padogrid
   spec:
-    type: ClusterIP
-    clusterIP: None
+    type: LoadBalancer
     selector:
       app: padogrid
       role: jupyterlab
     ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 8888
+      targetPort: jupyterlab
 
 parameters:
 - description: The application name

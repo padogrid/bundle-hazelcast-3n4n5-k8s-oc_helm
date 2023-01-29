@@ -30,22 +30,11 @@ fi
 
 # Delete PadoGrid
 echo "Deleting PadoGrid..."
-oc delete all -l app=padogrid
+./stop_padogrid $@
 
 # Delete Hazelcast
 echo "Deleting Hazelcast..."
-./stop_hazelcast $*
+./stop_hazelcast $@
 
-# Delete the rest if ALL specified
-if [ "$ALL" == "true" ]; then
-   echo "Deleting pvc, pv, storage..."
-   oc delete pvc padogrid-pvc
-   if [ "$OSS" == "true" ]; then
-      oc delete pvc mancenter-storage-hz-hazelcast-mancenter-0
-   else
-      oc delete pvc mancenter-storage-hz-hazelcast-enterprise-mancenter-0
-   fi
-   oc delete -f $APP_DIR/padogrid/pv-hostPath.yaml
-fi
 echo ""
 echo "Cleanup complete."

@@ -325,6 +325,8 @@ oc-helm-hazelcast-enterprise             ClusterIP      None            <none>  
 oc-helm-hazelcast-enterprise-mancenter   LoadBalancer   172.30.178.54   <pending>     8080:30179/TCP,443:32291/TCP   7m8s
 ```
 
+We can open Management Center via HTTP or HTTPS. Follow the instructions in one of the subsequent sections.
+
 #### 5.2.1.1. HTTP
 
 Run `oc expose svc` to expose the Management Center service.
@@ -342,41 +344,42 @@ oc get route
 Output:
 
 ```console
-NAME                                     HOST/PORT                                                                                      PATH   SERVICES                                    PORT   TERMINATION   WILDCARD
-oc-helm-hazelcast-enterprise-mancenter   oc-helm-hazelcast-enterprise-mancenter-oc-helm.apps.7919-681139.cor00005-2.cna.ukcloud.com          oc-helm-hazelcast-enterprise-mancenter   http                 None
+NAME                                     HOST/PORT                                                         PATH   SERVICES                                 PORT   TERMINATION   WILDCARD
+oc-helm-hazelcast-enterprise-mancenter   oc-helm-hazelcast-enterprise-mancenter-oc-helm.apps-crc.testing          oc-helm-hazelcast-enterprise-mancenter   http                 None
 ```
 
-HTTP URL: <http://oc-helm-hazelcast-enterprise-mancenter-oc-helm.apps.7919-681139.cor00005-2.cna.ukcloud.com>
+- HTTP URL: <http://oc-helm-hazelcast-enterprise-mancenter-oc-helm.apps-crc.testing>
 
 #### 5.2.1.2. HTTPS
 
 We can use the edge termination to access the management center via HTTPS. The [Red Hat OpenShift documentation](https://docs.openshift.com/dedicated/networking/routes/secured-routes.html#nw-ingress-creating-an-edge-route-with-a-custom-certificate_secured-routes) states, "With an edge route, the Ingress Controller terminates TLS encryption before forwarding traffic to the destination pod." This essentially means, beyond the termination point, the internal network traffic is not encrypted so that we can run the Management Center pod without HTTPS enabled.
 
-First, we need to create a self-signed certificate. The following creates an RSA key and certificate `etc/ssl` directory. Note that it sets CN (Common Name) to `*.demo.com` so that we can use it as a domain name for assigning any hosts.
+First, we need to create a self-signed certificate. The following creates an RSA key and certificate `etc/tls` directory. Note that it sets CN (Common Name) to `*.demo.com` so that we can use it as a domain name for assigning any hosts.
 
 ```bash
 cd_k8s oc_helm
-mkdir etc/ssl
-openssl req -newkey rsa:4096 -x509 -sha256 -days 365 -nodes -out etc/ssl/mancenter.crt -keyout etc/ssl/mancenter.key -subj "/CN=*.demo.com"
+mkdir etc/tls
+openssl req -newkey rsa:4096 -x509 -sha256 -days 365 -nodes \
+    -out etc/tls/tls.crt -keyout etc/tls/tls.key -subj "/CN=*.demo.com"
 ```
 
-Now, expose the management center service with the edge termination. Let's assign the hostname to `server1.demo.com` as follows.
+Now, expose the management center service with the edge termination. Let's assign the hostname to `mancenter.demo.com` as follows.
 
 ```bash
-oc create route edge --service=oc-helm-hazelcast-enterprise-mancenter --hostname=padogrid.demo.com --key etc/ssl/mancenter.key --cert etc/ssl/mancenter.crt
+oc create route edge tls-mancenter --service=oc-helm-hazelcast-enterprise-mancenter \
+    --hostname=mancenter.demo.com --cert etc/tls/tls.crt --key etc/tls/tls.key
 ```
 
-Since `server1.demo.com` is a fictitious host, we need to add it in the `/etc/hosts` file. Edit `/etc/hosts` and append it to your host's IP address.
-
+Since `mancenter.demo.com` is a fictitious host, we need to add it in the `/etc/hosts` file. Edit `/etc/hosts` and append it to your host's IP address.
 
 ```bash
 sudo vi /etc/hosts
 ```
 
-Append `server1.demo.com` to your host IP in `etc/hosts`:
+Append `mancenter.demo.com` to your host IP or 127.0.0.1 in `/etc/hosts`:
 
 ```console
-192.168.56.2 myhost server1.demo.com
+127.0.0.1 localhost mancenter.demo.com
 ```
 
 Run `oc get route` to get the Management Center URL:
@@ -386,11 +389,11 @@ oc get route
 ```
 
 ```console
-NAME                                     HOST/PORT          PATH   SERVICES                                 PORT   TERMINATION   WILDCARD
-oc-helm-hazelcast-enterprise-mancenter   server1.demo.com          oc-helm-hazelcast-enterprise-mancenter   http   edge          None
+NAME            HOST/PORT            PATH   SERVICES                                 PORT   TERMINATION   WILDCARD
+tls-mancenter   mancenter.demo.com          oc-helm-hazelcast-enterprise-mancenter   http   edge          None
 ```
 
-HTTPS URL: <https://server1.demo.com>
+HTTPS URL: <https://mancenter.demo.com>
 
 ## 6. Launch PadoGrid
 
@@ -413,18 +416,80 @@ cd_k8s oc_helm; cd bin_sh
 ./start_padogrid
 ```
 
-## 7. Ingest Data
+## 7. Login to PadoGrid
 
-Login to the PadoGrid pod.
+You can use the PadoGrid pod as a client to the Hazelcast cluster. There are three (3) ways to login to the PadoGrid pod. Please follow the instructions in one of the subsequent sections.
+
+### 7.1. HTTP
+
+The PadoGrid container is equipped with JupyterLab. The `start_padogrid` script has already exposed the `padogrid-service` so that we can immediately login to PadoGrid from the browser.
 
 ```bash
-cd_k8s oc_helm; cd bin_sh
+kubectl get route padogrid-service
+```
+
+Output:
+
+```console
+NAME               HOST/PORT                                   PATH   SERVICES           PORT   TERMINATION   WILDCARD
+padogrid-service   padogrid-service-oc-helm.apps-crc.testing          padogrid-service   http                 None
+```
+
+- **URL:** <http://padogrid-service-oc-helm.apps-crc.testing>
+- **Password:** padogrid
+
+### 7.2. HTTPS
+
+If you want to access PadoGrid via HTTPS, then we need to terminate TLS as we did for the Management Center earlier.
+
+```bash
+cd_k8s oc_helm
+oc create route edge tls-padogrid --service=padogrid-service \
+    --hostname=padogrid.demo.com --cert etc/tls/tls.crt --key etc/tls/tls.key
+```
+
+Since `padogrid.demo.com` is a fictitious host, we need to add it in the `/etc/hosts` file. Edit `/etc/hosts` and append it to your host's IP address.
+
+```bash
+sudo vi /etc/hosts
+```
+
+Append `padogrid.demo.com` to your host IP or 127.0.0.1 in `/etc/hosts`:
+
+```console
+127.0.0.1 localhost mancenter.demo.com padogrid.demo.com
+```
+
+Run `oc get route` to get the Management Center URL:
+
+```bash
+oc get route tls-padogrid
+```
+
+```console
+NAME           HOST/PORT           PATH   SERVICES           PORT   TERMINATION   WILDCARD
+tls-padogrid   padogrid.demo.com          padogrid-service   http   edge          None
+```
+
+- **HTTPS URL:** <https://padogrid.demo.com>
+- **Password:** padogrid
+
+### 7.3. Shell
+
+From your shell, run the `login_padogrid_pod` script as follows.
+
+```bash
+cd_k8s kubectl_helm/bin_sh
 ./login_padogrid_pod
 ```
 
+## 8. Ingest Data
+
+Login to the PadoGrid pod using one of the options described in [Section 7](#7-login-to-padogrid).
+
 The `start_padogrid` script automatcially sets the Hazelcast service and the namespace for constructing the DNS address needed by the `perf_test` app to connect to the Hazelcast cluster. This allows us to simply login to the PadoGrid pod and run the `perf_test` app.
 
-*If `perf_test` fails to connect to the Hazelcst cluster then you may need to manually configure the Hazelcast client as described in the [next section](#8-manually-configuring-perf_test).*
+*If `perf_test` fails to connect to the Hazelcst cluster then you may need to manually configure the Hazelcast client as described in the [next section](#9-manually-configuring-perf_test).*
 
 Create and run the `perf_test` app.
 
@@ -472,7 +537,7 @@ Exit from the PadoGrid pod.
 exit
 ```
 
-## 8. Manually Configuring `perf_test`
+## 9. Manually Configuring `perf_test`
 
 The `test_ingestion` script may fail to connect to the Hazelcast cluster if you started the PadoGrid pod before the Hazelcast cluster is started. In that case, you can simply restart PadoGrid. If it still fails even after the Hazelcast cluster has been started first, then you can manually enter the DNS address in the `etc/hazelcast-client-k8s.xml` file as described below.
 
@@ -481,7 +546,7 @@ cd_app perf_test
 vi etc/hazelcast-client-k8s.xml
 ```
 
-### 8.1. Hazelcast OSS
+### 9.1. Hazelcast OSS
 
 Enter the following in the `etc/hazelcast-client-k8s.xml` file. `oc-helm-hazelcast` is the service and  `oc-helm` is the project name.
 
@@ -491,7 +556,7 @@ Enter the following in the `etc/hazelcast-client-k8s.xml` file. `oc-helm-hazelca
                 </kubernetes>
 ```
 
-### 8.2. Hazelcast Enterprise
+### 9.2. Hazelcast Enterprise
 
 Enter the following in the `etc/hazelcast-client-k8s.xml` file. `oc-helm-hazelcast-enterprise` is the service and  `oc-helm` is the project name.
 
@@ -501,23 +566,23 @@ Enter the following in the `etc/hazelcast-client-k8s.xml` file. `oc-helm-hazelca
                 </kubernetes>
 ```
 
-## 9. Teardown
+## 10. Teardown
 
-### 9.1. Hazelcast OSS
+### 10.1. Hazelcast OSS
 
 ```bash
 cd_k8s oc_helm; cd bin_sh
 ./cleanup -all -oss
 ```
 
-### 9.2. Hazelcast Enterprise
+### 10.2. Hazelcast Enterprise
 
 ```bash
 cd_k8s oc_helm; cd bin_sh
 ./cleanup -all
 ```
 
-## 10. References
+## 11. References
 
 1. Hazelcast Charts, [https://github.com/hazelcast/charts](https://github.com/hazelcast/charts)
 2. Configuring Prometheus Metrics, [README-PROM.md](README-PROM.md).

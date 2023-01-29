@@ -3,7 +3,7 @@ SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
 . $SCRIPT_DIR/.addonenv.sh
 
 EXECUTABLE="`basename $0`"
-PADOGRID_URL=http://padogrid-service-$APP_NAME.apps-crc.testing
+PADOGRID_URL=http://padogrid-service-$PROJECT_NAME.apps-crc.testing
 
 if [ "$1" == "-?" ]; then
 cat <<EOF
