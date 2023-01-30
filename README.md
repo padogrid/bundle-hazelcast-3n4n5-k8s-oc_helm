@@ -81,47 +81,13 @@ Let's create the `oc-helm` project. You can create a project with a different na
 oc new-project oc-helm
 ```
 
-## 3. CRC Users (Optional): Create Mountable Persistent Volumes in Master Node
-
-**This section is optional and only applies to CRC users.**
-
-If you are logged onto CRC running on your local PC instead of OpenShift Container Platform (OCP), then to allow read/write permissions, we need to create additional persistent volumes using **hostPath** for PadoGrid. PadoGrid stores workspaces in the `/opt/padogrid/workspaces` directory, which can be optionally mounted to a persistent volume. Let’s create a couple of volumes in the master node as follows.
-
-```bash
-# Login to the master node
-ssh -i ~/.crc/machines/crc/id_rsa core@$(crc ip)
-
-# Create hostPath volumes. We only need one but let's create two (2)
-# in case you want to run addional pods.
-sudo mkdir -p /mnt/vol1
-sudo mkdir -p /mnt/vol2
-sudo chmod -R 777 /mnt/vol1
-sudo chmod -R 777 /mnt/vol2
-sudo chcon -R -t svirt_sandbox_file_t /mnt/vol1 /mnt/vol2
-sudo restorecon -R /mnt/vol1 /mnt/vol2
-exit
-```
-
-We will use the volumes created as follows:
-
-| Container     | CDC File               | Container Path           | Volume Path |
-| ------------- | ---------------------- | ------------------------ | ----------- |
-| PadoGrid      | padogrid/padogrid.yaml | /opt/padogrid/workspaces | /mnt/vol?   |
-
-We can now create the required persistent volumes using **hostPath** by executing the following.
-
-```bash
-cd_k8s oc_helm; cd padogrid
-oc create -f pv-hostPath.yaml
-```
-
-## 4. Add User to `nonroot` SCC (Security Context Constraints)
+## 3. Add User to `nonroot` SCC (Security Context Constraints)
 
 PadoGrid runs as a non-root user (padogrid/1001) that requires read/write permissions to the persistent volume. Let's add your project's default user to the `nonroot` SCC.
 
 You can use one of the following methods to add the user to `nonroot` SSC.
 
-### 4.1. Using Editor
+### 3.1. Using Editor
 
 ```bash
 oc edit scc nonroot
@@ -136,7 +102,7 @@ users:
 - system:serviceaccount:oc-helm:default
 ```
 
-### 4.2. Using CLI
+### 3.2. Using CLI
 
 ```bash
 # See if user can use nonroot
@@ -148,11 +114,11 @@ oc adm policy add-scc-to-user nonroot system:serviceaccount:oc-helm:default
 
 :exclamation: Note that depending on the `oc` version, e.g., **v4.5.9**, `oc get scc nonroot -o yaml` may not show the user you added using CLI. This is also true for the user added using the editor, which may not be shown in the output of `oc adm policy who-can use scc nonroot`.
 
-## 5. Launch Hazelcast
+## 4. Launch Hazelcast
 
 By default, the `start_hazelcast` script launches Hazelcast Enterprise. To run, OSS, specify the `-oss` as shown in the sequent section.
 
-### 5.1. Hazelcast OSS
+### 4.1. Hazelcast OSS
 
 ```bash
 cd_k8s oc_helm; cd bin_sh
@@ -247,7 +213,7 @@ oc-helm-hazelcast-mancenter   oc-helm-hazelcast-mancenter-oc-helm.apps.7919-6811
 
 Management Center URL: http://oc-helm-hazelcast-mancenter-oc-helm.apps.7919-681139.cor00005-2.cna.ukcloud.com
 
-### 5.2. Hazelcast Enterprise
+### 4.2. Hazelcast Enterprise
 
 Launch Hazelcast Enterprise Operator and Hazelcast.
 
@@ -309,7 +275,7 @@ Watch pods.
 oc get pods -w
 ```
 
-### 5.2.1. Hazelcast Management Center
+### 4.2.1. Hazelcast Management Center
 
 View the Hazelcast services.
 
@@ -327,7 +293,7 @@ oc-helm-hazelcast-enterprise-mancenter   LoadBalancer   172.30.178.54   <pending
 
 We can open Management Center via HTTP or HTTPS. Follow the instructions in one of the subsequent sections.
 
-#### 5.2.1.1. HTTP
+#### 4.2.1.1. HTTP
 
 Run `oc expose svc` to expose the Management Center service.
 
@@ -350,7 +316,7 @@ oc-helm-hazelcast-enterprise-mancenter   oc-helm-hazelcast-enterprise-mancenter-
 
 - HTTP URL: <http://oc-helm-hazelcast-enterprise-mancenter-oc-helm.apps-crc.testing>
 
-#### 5.2.1.2. HTTPS
+#### 4.2.1.2. HTTPS
 
 We can use the edge termination to access the management center via HTTPS. The [Red Hat OpenShift documentation](https://docs.openshift.com/dedicated/networking/routes/secured-routes.html#nw-ingress-creating-an-edge-route-with-a-custom-certificate_secured-routes) states, "With an edge route, the Ingress Controller terminates TLS encryption before forwarding traffic to the destination pod." This essentially means, beyond the termination point, the internal network traffic is not encrypted so that we can run the Management Center pod without HTTPS enabled.
 
@@ -395,32 +361,29 @@ tls-mancenter   mancenter.demo.com          oc-helm-hazelcast-enterprise-mancent
 
 HTTPS URL: <https://mancenter.demo.com>
 
-## 6. Launch PadoGrid
+## 5. Launch PadoGrid
 
-### 6.1. CRC Users
+### 5.1. CRC Users
 
 ```bash
 cd_k8s oc_helm; cd bin_sh
 
 # If you have not created local-storage
 ./start_padogrid
-
-# If you have created local-storage (see Section 3)
-./start_padogrid local-storage
 ```
 
-### 6.2. OCP Users
+### 5.2. OCP Users
 
 ```bash
 cd_k8s oc_helm; cd bin_sh
 ./start_padogrid
 ```
 
-## 7. Login to PadoGrid
+## 6. Login to PadoGrid
 
 You can use the PadoGrid pod as a client to the Hazelcast cluster. There are three (3) ways to login to the PadoGrid pod. Please follow the instructions in one of the subsequent sections.
 
-### 7.1. HTTP
+### 6.1. HTTP
 
 The PadoGrid container is equipped with JupyterLab. The `start_padogrid` script has already exposed the `padogrid-service` so that we can immediately login to PadoGrid from the browser.
 
@@ -438,7 +401,7 @@ padogrid-service   padogrid-service-oc-helm.apps-crc.testing          padogrid-s
 - **URL:** <http://padogrid-service-oc-helm.apps-crc.testing>
 - **Password:** padogrid
 
-### 7.2. HTTPS
+### 6.2. HTTPS
 
 If you want to access PadoGrid via HTTPS, then we need to terminate TLS as we did for the Management Center earlier.
 
@@ -474,7 +437,7 @@ tls-padogrid   padogrid.demo.com          padogrid-service   http   edge        
 - **HTTPS URL:** <https://padogrid.demo.com>
 - **Password:** padogrid
 
-### 7.3. Shell
+### 6.3. `bash`
 
 From your shell, run the `login_padogrid_pod` script as follows.
 
@@ -483,13 +446,13 @@ cd_k8s oc_helm/bin_sh
 ./login_padogrid_pod
 ```
 
-## 8. Ingest Data
+## 7. Ingest Data
 
-Login to the PadoGrid pod using one of the options described in [Section 7](#7-login-to-padogrid).
+Login to the PadoGrid pod using one of the options described in [Section 6](#6-login-to-padogrid).
 
 The `start_padogrid` script automatcially sets the Hazelcast service and the namespace for constructing the DNS address needed by the `perf_test` app to connect to the Hazelcast cluster. This allows us to simply login to the PadoGrid pod and run the `perf_test` app.
 
-*If `perf_test` fails to connect to the Hazelcst cluster then you may need to manually configure the Hazelcast client as described in the [next section](#9-manually-configuring-perf_test).*
+*If `perf_test` fails to connect to the Hazelcst cluster then you may need to manually configure the Hazelcast client as described in the [next section](#8-manually-configuring-perf_test).*
 
 Create and run the `perf_test` app.
 
@@ -537,7 +500,7 @@ Exit from the PadoGrid pod.
 exit
 ```
 
-## 9. Manually Configuring `perf_test`
+## 8. Manually Configuring `perf_test`
 
 The `test_ingestion` script may fail to connect to the Hazelcast cluster if you started the PadoGrid pod before the Hazelcast cluster is started. In that case, you can simply restart PadoGrid. If it still fails even after the Hazelcast cluster has been started first, then you can manually enter the DNS address in the `etc/hazelcast-client-k8s.xml` file as described below.
 
@@ -546,7 +509,7 @@ cd_app perf_test
 vi etc/hazelcast-client-k8s.xml
 ```
 
-### 9.1. Hazelcast OSS
+### 8.1. Hazelcast OSS
 
 Enter the following in the `etc/hazelcast-client-k8s.xml` file. `oc-helm-hazelcast` is the service and  `oc-helm` is the project name.
 
@@ -556,7 +519,7 @@ Enter the following in the `etc/hazelcast-client-k8s.xml` file. `oc-helm-hazelca
                 </kubernetes>
 ```
 
-### 9.2. Hazelcast Enterprise
+### 8.2. Hazelcast Enterprise
 
 Enter the following in the `etc/hazelcast-client-k8s.xml` file. `oc-helm-hazelcast-enterprise` is the service and  `oc-helm` is the project name.
 
@@ -566,23 +529,23 @@ Enter the following in the `etc/hazelcast-client-k8s.xml` file. `oc-helm-hazelca
                 </kubernetes>
 ```
 
-## 10. Teardown
+## 9. Teardown
 
-### 10.1. Hazelcast OSS
+### 9.1. Hazelcast OSS
 
 ```bash
 cd_k8s oc_helm; cd bin_sh
 ./cleanup -all -oss
 ```
 
-### 10.2. Hazelcast Enterprise
+### 9.2. Hazelcast Enterprise
 
 ```bash
 cd_k8s oc_helm; cd bin_sh
 ./cleanup -all
 ```
 
-## 11. References
+## 10. References
 
 1. Hazelcast Charts, [https://github.com/hazelcast/charts](https://github.com/hazelcast/charts)
 2. Configuring Prometheus Metrics, [README-PROM.md](README-PROM.md).

@@ -14,12 +14,13 @@ SYNOPSIS
    $EXECUTABLE [-oss] [-all] [-?]
 
 DESCRIPTION
-   Deletes all Hazelccast resources but the management persistent claim. To delete the persistent claim,
-   specify the '-all' option.
+   Deletes all Hazelccast resources but the management persistent claim. To delete the
+   persistent claim, specify the '-all' option.
 
 OPTIONS
    -oss
-             If specified, then deletes Hazelcast OSS resources, otherwise, Hazelcast Enterprise resources.
+             If specified, then deletes Hazelcast OSS resources, otherwise, Hazelcast
+             Enterprise resources.
 
 EOF
 exit

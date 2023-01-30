@@ -19,12 +19,12 @@ DESCRIPTION
 
 OPTIONS
    -oss
-             If specified launches Hazelcast OSS, otherwise, Hazelcast Enterprise which requires 
-             a license key.
+             If specified launches Hazelcast OSS, otherwise, Hazelcast Enterprise which
+             requires a license key.
 
    hazelcast_version
-             Hazelcast image version. If unspecified, then the latest Hazelcast image version is
-             used.
+             Hazelcast image version. If unspecified, then the latest Hazelcast image
+             version is used.
 
 DEFAULT:
    ./$EXECUTABLE
@@ -33,14 +33,14 @@ EXAMPLES:
    # Start the latest Hazelcast OSS 
    ./$EXECUTABLE -oss
 
-   # Start Hazelcast OSS version 4.2.1
-   ./$EXECUTABLE -oss 4.2.1
+   # Start Hazelcast OSS version 5.2.1
+   ./$EXECUTABLE -oss 5.2.1
 
    # Start the latest Hazelcast Enterprise
    ./$EXECUTABLE
 
-   # Start Hazelcast Enterprise 4.2.1
-   ./$EXECUTABLE 4.2.1
+   # Start Hazelcast Enterprise 5.2.1
+   ./$EXECUTABLE 5.2.1
 
 SEE ALSO
    https://github.com/hazelcast/charts

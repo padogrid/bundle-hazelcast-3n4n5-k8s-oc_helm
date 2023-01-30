@@ -15,22 +15,17 @@ SYNOPSIS
    $EXECUTABLE [storage_class] [-?]
 
 DESCRIPTION
-   Launches a PadoGrid pod with the name 'padogrid'. Padogrid keeps workspaces in the '/opt/padogrid/workspaces'
-   directory. You can optionally mount that directory to a persistent volume as follows.
-
-   CRC - For CRC, the storage_class value must be 'local_storage'. If unspecified, then the persistent volume claim
-         is not made.
-
-   OCP - For OCP, you can specify any available storage class. If not specified then the default storage
-        class is assigned.
+   Launches a PadoGrid pod with the name 'padogrid'. Padogrid keeps workspaces in the
+   '/opt/padogrid/workspaces' directory. You can optionally mount that directory to a
+   specific storage class. If the storage class is not specified, then the default
+   storage class is assigned.
 
    Execute the following command to list the available storage classes.
 
       oc get storageclass
 
-   Once a PadoGrid pod is started, you can login to the pod using one of the following options.
-
-   To login to PadoGrid, use one of the following options.
+   Once a PadoGrid pod is started, you can login to the pod using one of the following
+   options.
 
    - Browser
        URL: $PADOGRID_URL
@@ -48,13 +43,12 @@ DESCRIPTION
 
 OPTIONS
    storage_class
-             The specified storage class is used as the Storage Class for the 'paodgrid-pvc' Persistent
-             Volume Claim. If you are connected to CRC, then you must specify 'local-storage'. The 'local-storeage'
-             persistent volumes must also be created beforehand as described in the bundle instructions.
-             
-             If this option is not specified, then the default storage class is assigned. For CRC, the
-             default storage classs is undefined, and therefore, the persistent volume claim is not made
-             and the container file system is used instead. 
+             The specified optional storage class is used as the Storage Class for the
+             'paodgrid-pvc' Persistent Volume Claim (PVC). If this option is not specified,
+             then the default storage class is assigned. If the default storage class
+             is not found, then PVC is not created and workspaces will be stored in the
+             PadoGrid pod. This may occur for older versions of CRC which lack the default
+             storage class.
 
 SEE ALSO
    login_padogrid_pod(1), padogrid/padogrid.yaml, padogrid/padogrid-no-pvc.yaml

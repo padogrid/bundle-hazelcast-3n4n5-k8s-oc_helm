@@ -14,13 +14,13 @@ SYNOPSIS
    $EXECUTABLE [-all] [-?]
 
 DESCRIPTION
-   Deletes PadoGrid deployment pods. If '-all' is specified then it also deletes the persistent
+   Deletes PadoGrid deployment pods. If '-all' is specified then it also deletes the
+   persistent
    claim and the 'local-storage' storage class.
 
 OPTIONS
    -all
-             If specified then it also deletes the 'padogrid-pvc' persistent claim along with
-             'local-storage'.
+             If specified then it also deletes the 'padogrid-pvc' persistent claim.
 
 EOF
 exit
@@ -31,5 +31,4 @@ oc delete all -l app=padogrid
 if [ "$ALL" == "true" ]; then
    echo "Deleting PadoGrid pvc, pv, and local-storage..."
    oc delete pvc padogrid-pvc
-   oc delete -f $APP_DIR/padogrid/pv-hostPath.yaml > /dev/null 2>&1
 fi
