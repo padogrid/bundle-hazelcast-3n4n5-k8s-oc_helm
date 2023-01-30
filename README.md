@@ -45,8 +45,7 @@ oc_helm/
 │   └── values.yaml
 ├── padogrid
 │   ├── padogrid-no-pvc.yaml
-│   ├── padogrid.yaml
-│   └── pv-hostPath.yaml
+│   └── padogrid.yaml
 └── prometheus
     └── service-monitor.yaml
 ```
@@ -336,16 +335,16 @@ oc create route edge tls-mancenter --service=oc-helm-hazelcast-enterprise-mancen
     --hostname=mancenter.demo.com --cert etc/tls/tls.crt --key etc/tls/tls.key
 ```
 
-Since `mancenter.demo.com` is a fictitious host, we need to add it in the `/etc/hosts` file. Edit `/etc/hosts` and append it to your host's IP address.
+Assuming you are using CRC, open `/etc/hosts` and look for the IP address that has `crc` host names assigned. We need to append `mancenter.demo.com` to that IP address.
 
 ```bash
 sudo vi /etc/hosts
 ```
 
-Append `mancenter.demo.com` to your host IP or 127.0.0.1 in `/etc/hosts`:
+Append `mancenter.demo.com` the IP address that has `crc` host names assigned in `/etc/hosts`:
 
 ```console
-127.0.0.1 localhost mancenter.demo.com
+<ip-address> ... api.crc.testing ... mancenter.demo.com
 ```
 
 Run `oc get route` to get the Management Center URL:
@@ -359,7 +358,7 @@ NAME            HOST/PORT            PATH   SERVICES                            
 tls-mancenter   mancenter.demo.com          oc-helm-hazelcast-enterprise-mancenter   http   edge          None
 ```
 
-HTTPS URL: <https://mancenter.demo.com>
+- HTTPS URL: <https://mancenter.demo.com>
 
 ## 5. Launch PadoGrid
 
@@ -411,16 +410,16 @@ oc create route edge tls-padogrid --service=padogrid-service \
     --hostname=padogrid.demo.com --cert etc/tls/tls.crt --key etc/tls/tls.key
 ```
 
-Since `padogrid.demo.com` is a fictitious host, we need to add it in the `/etc/hosts` file. Edit `/etc/hosts` and append it to your host's IP address.
+Assuming you are using CRC, open `/etc/hosts` and look for the IP address that has `crc` host names assigned. We need to append `padogrid.demo.com` to that IP address.
 
 ```bash
 sudo vi /etc/hosts
 ```
 
-Append `padogrid.demo.com` to your host IP or 127.0.0.1 in `/etc/hosts`:
+Append `mancenter.demo.com` the IP address that has `crc` host names assigned in `/etc/hosts`:
 
 ```console
-127.0.0.1 localhost mancenter.demo.com padogrid.demo.com
+<ip-address> ... api.crc.testing ... mancenter.demo.com padogrid.demo.com
 ```
 
 Run `oc get route` to get the Management Center URL:
@@ -437,7 +436,7 @@ tls-padogrid   padogrid.demo.com          padogrid-service   http   edge        
 - **HTTPS URL:** <https://padogrid.demo.com>
 - **Password:** padogrid
 
-### 6.3. `bash`
+### 6.3. Shell
 
 From your shell, run the `login_padogrid_pod` script as follows.
 
