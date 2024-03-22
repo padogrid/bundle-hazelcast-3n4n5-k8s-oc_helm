@@ -46,3 +46,4 @@ setenv.sh0
 build
 k8s/oc_helm/hazelcast/hz-secret.yaml
 k8s/oc_helm/hazelcast/mc-secret.yaml
+k8s/oc_helm/etc/tls

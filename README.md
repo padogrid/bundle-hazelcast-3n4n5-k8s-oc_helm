@@ -3,7 +3,7 @@
 ---
 
 <!-- Platforms -->
-[![Host OS](https://github.com/padogrid/padogrid/wiki/images/padogrid-host-os.drawio.svg)](https://github.com/padogrid/padogrid/wiki/Platform-Host-OS)
+[![PadoGrid 1.x](https://github.com/padogrid/padogrid/wiki/images/padogrid-padogrid-1.x.drawio.svg)](https://github.com/padogrid/padogrid/wiki/Platform-PadoGrid-1.x) [![Host OS](https://github.com/padogrid/padogrid/wiki/images/padogrid-host-os.drawio.svg)](https://github.com/padogrid/padogrid/wiki/Platform-Host-OS) [![Kubernetes](https://github.com/padogrid/padogrid/wiki/images/padogrid-kubernetes.drawio.svg)](https://github.com/padogrid/padogrid/wiki/Platform-Kubernetes)
 
 # Hazelcast OpenShift Helm Charts
 
@@ -19,7 +19,7 @@ install_bundle -download bundle-hazelcast-3n4n5-k8s-oc_helm
 
 ## Use Case
 
-This bundle installs PadoGrid and Hazelcast Kubernetes containers to run on CodeReady Container (CRC) or OpenShift Container Platform (OCP). It demonstrates how to start Hazelcast using Helm Charts and  use the PadoGrid pod to ingest mock data into Hazelcast.
+This bundle installs PadoGrid and Hazelcast Kubernetes containers to run on OpenShift Local (CRC) or OpenShift Container Platform (OCP). It demonstrates how to start Hazelcast using Helm Charts and  use the PadoGrid pod to ingest mock data into Hazelcast.
 
 ![OC Helm Charts Diagram](images/oc-helm.jpg)
 
@@ -59,7 +59,7 @@ oc_helm/
 Run `build_app` which initializes your local environment. This script sets the license key in the `hazelcast/secret.yaml` file.
 
 ```bash
-cd_k8s oc_helm; cd bin_sh
+cd_k8s oc_helm/bin_sh
 ./build_app
 ```
 ### Changing Container Versions
@@ -115,7 +115,7 @@ oc adm policy who-can use scc nonroot
 oc adm policy add-scc-to-user nonroot system:serviceaccount:oc-helm:default
 ```
 
-:exclamation: Note that depending on the `oc` version, e.g., **v4.5.9**, `oc get scc nonroot -o yaml` may not show the user you added using CLI. This is also true for the user added using the editor, which may not be shown in the output of `oc adm policy who-can use scc nonroot`.
+❗️ Note that depending on the `oc` version, e.g., **v4.5.9**, `oc get scc nonroot -o yaml` may not show the user you added using CLI. This is also true for the user added using the editor, which may not show in the output of `oc adm policy who-can use scc nonroot`.
 
 ## 4. Launch Hazelcast
 
@@ -124,7 +124,7 @@ By default, the `start_hazelcast` script launches Hazelcast Enterprise. To run, 
 ### 4.1. Hazelcast OSS
 
 ```bash
-cd_k8s oc_helm; cd bin_sh
+cd_k8s oc_helm/bin_sh
 ./start_hazelcast -oss
 ```
 
@@ -171,8 +171,8 @@ After making the changes, restart (stop and start) the Hazelcast cluster as foll
 
 ```bash
 cd_k8s oc_helm; cd bin_sh
-./stop_hazelcast
-./start_hazelcast
+./stop_hazelcast -oss
+./start_hazelcast -oss
 ```
 
 Watch pods.
@@ -210,11 +210,11 @@ oc get route
 Output:
 
 ```console
-NAME                          HOST/PORT                                                                           PATH   SERVICES                         PORT   TERMINATION   WILDCARD
-oc-helm-hazelcast-mancenter   oc-helm-hazelcast-mancenter-oc-helm.apps.7919-681139.cor00005-2.cna.ukcloud.com          oc-helm-hazelcast-mancenter   http                 None
+NAME                          HOST/PORT                                              PATH   SERVICES                      PORT   TERMINATION   WILDCARD
+oc-helm-hazelcast-mancenter   oc-helm-hazelcast-mancenter-oc-helm.apps-crc.testing          oc-helm-hazelcast-mancenter   http                 None
 ```
 
-Management Center URL: http://oc-helm-hazelcast-mancenter-oc-helm.apps.7919-681139.cor00005-2.cna.ukcloud.com
+- HTTP URL: http://oc-helm-hazelcast-mancenter-oc-helm.apps-crc.testing
 
 ### 4.2. Hazelcast Enterprise
 
@@ -319,7 +319,7 @@ oc-helm-hazelcast-enterprise-mancenter   oc-helm-hazelcast-enterprise-mancenter-
 
 - HTTP URL: <http://oc-helm-hazelcast-enterprise-mancenter-oc-helm.apps-crc.testing>
 
-#### 4.2.1.2. HTTPS
+### 4.3. Hazelcast Management Center HTTPS
 
 We can use the edge termination to access the management center via HTTPS. The [Red Hat OpenShift documentation](https://docs.openshift.com/dedicated/networking/routes/secured-routes.html#nw-ingress-creating-an-edge-route-with-a-custom-certificate_secured-routes) states, "With an edge route, the Ingress Controller terminates TLS encryption before forwarding traffic to the destination pod." This essentially means, beyond the termination point, the internal network traffic is not encrypted so that we can run the Management Center pod without HTTPS enabled.
 
@@ -335,11 +335,16 @@ openssl req -newkey rsa:4096 -x509 -sha256 -days 365 -nodes \
 Now, expose the management center service with the edge termination. Let's assign the hostname to `mancenter.demo.com` as follows.
 
 ```bash
+# Hazelcast OSS
+oc create route edge tls-mancenter --service=oc-helm-hazelcast-mancenter \
+    --hostname=mancenter.demo.com --port 8080 --cert etc/tls/tls.crt --key etc/tls/tls.key
+
+# Hazelcast Enterprise
 oc create route edge tls-mancenter --service=oc-helm-hazelcast-enterprise-mancenter \
-    --hostname=mancenter.demo.com --cert etc/tls/tls.crt --key etc/tls/tls.key
+    --hostname=mancenter.demo.com --port 8080 --cert etc/tls/tls.crt --key etc/tls/tls.key
 ```
 
-Assuming you are using CRC, open `/etc/hosts` and look for the IP address that has `crc` host names assigned. We need to append `mancenter.demo.com` to that IP address.
+Assuming you are using OpenShift Local, open `/etc/hosts` and look for the IP address that has `crc` host names assigned. We need to append `mancenter.demo.com` to that IP address.
 
 ```bash
 sudo vi /etc/hosts
@@ -366,7 +371,7 @@ tls-mancenter   mancenter.demo.com          oc-helm-hazelcast-enterprise-mancent
 
 ## 5. Launch PadoGrid
 
-### 5.1. CRC Users
+### 5.1. OpenShift Local Users
 
 ```bash
 cd_k8s oc_helm; cd bin_sh
@@ -411,10 +416,10 @@ If you want to access PadoGrid via HTTPS, then we need to terminate TLS as we di
 ```bash
 cd_k8s oc_helm
 oc create route edge tls-padogrid --service=padogrid-service \
-    --hostname=padogrid.demo.com --cert etc/tls/tls.crt --key etc/tls/tls.key
+    --hostname=padogrid.demo.com --port 8888 --cert etc/tls/tls.crt --key etc/tls/tls.key
 ```
 
-Assuming you are using CRC, open `/etc/hosts` and look for the IP address that has `crc` host names assigned. We need to append `padogrid.demo.com` to that IP address.
+Assuming you are using OpenShift Local, open `/etc/hosts` and look for the IP address that has `crc` host names assigned. We need to append `padogrid.demo.com` to that IP address.
 
 ```bash
 sudo vi /etc/hosts
@@ -544,7 +549,7 @@ cd_k8s oc_helm; cd bin_sh
 ### 9.2. Hazelcast Enterprise
 
 ```bash
-cd_k8s oc_helm; cd bin_sh
+cd_k8s oc_helm/bin_sh
 ./cleanup -all
 ```
 
