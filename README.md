@@ -573,6 +573,12 @@ cd_k8s oc_helm/bin_sh
 ./cleanup -all
 ```
 
+### 9.3 Delete project
+
+```bash
+oc delete project oc-helm
+```
+
 ## 10. References
 
 1. Hazelcast Charts, [https://github.com/hazelcast/charts](https://github.com/hazelcast/charts)
