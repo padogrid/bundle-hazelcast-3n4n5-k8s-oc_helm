@@ -11,4 +11,4 @@ spec:
     scheme: http
   selector:
     matchLabels:
-      helm.sh/chart: hazelcast-enterprise-3.6.2
+      helm.sh/chart: hazelcast-5.8.14

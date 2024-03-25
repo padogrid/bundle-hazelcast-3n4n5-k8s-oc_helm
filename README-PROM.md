@@ -64,7 +64,28 @@ oc policy add-role-to-user monitoring-edit dspark@sorintlab.com -n oc-helm
 
 First, check the label
 
+- Hazelcast OSS
+
 ```bash
+oc describe svc oc-helm-hazelcast-metrics
+```
+
+Output:
+
+```console
+Name:              oc-helm-hazelcast-metrics
+Namespace:         oc-helm
+Labels:            app.kubernetes.io/component=metrics
+                   app.kubernetes.io/instance=oc-helm
+                   app.kubernetes.io/managed-by=Helm
+                   app.kubernetes.io/name=hazelcast
+                   helm.sh/chart=hazelcast-5.8.14
+...
+```
+
+- Hazelcast Enterprise
+
+```
 oc describe svc oc-helm-hazelcast-enterprise-metrics
 ```
 
@@ -73,10 +94,11 @@ Output:
 ```console
 Name:              oc-helm-hazelcast-enterprise-metrics
 Namespace:         oc-helm
-Labels:            app.kubernetes.io/instance=oc-helm
+Labels:            app.kubernetes.io/component=metrics
+                   app.kubernetes.io/instance=oc-helm
                    app.kubernetes.io/managed-by=Helm
                    app.kubernetes.io/name=hazelcast-enterprise
-                   helm.sh/chart=hazelcast-enterprise-3.5.3
+                   helm.sh/chart=hazelcast-enterprise-5.8.14
 ...
 ```
 
@@ -89,7 +111,10 @@ cd_k8s oc_helm
 vi prometheus/service-monitor.yaml
 ```
 
-For our example, set `helm.sh/chart: hazelcast-enterprise-3.5.3` at the end of the file as shown below.
+
+- Hazelcast OSS
+
+For our example, set `helm.sh/chart: hazelcast-5.8.14` at the end of the file as shown below.
 
 ```yaml
 apiVersion: monitoring.coreos.com/v1
@@ -105,12 +130,34 @@ spec:
     scheme: http
   selector:
     matchLabels:
-      helm.sh/chart: hazelcast-enterprise-3.5.3
+      helm.sh/chart: hazelcast-5.8.14
+```
+
+- Hazelcast Enterprise
+
+For our example, set `helm.sh/chart: hazelcast-enterprise-5.8.14` at the end of the file as shown below.
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    k8s-app: hazelcast-monitor
+  name: hazelcast-monitor
+spec:
+  endpoints:
+  - interval: 15s
+    port: metrics
+    scheme: http
+  selector:
+    matchLabels:
+      helm.sh/chart: hazelcast-enterprise-5.8.14
 ```
 
 Apply `prometheus/service-monitor.yaml`
 
 ```bash
+cd_k8s oc_helm
 oc apply -f prometheus/service-monitor.yaml
 oc  get servicemonitor
 ```
@@ -252,15 +299,12 @@ oc -n openshift-monitoring get routes
 Output:
 
 ```console
-NAME                HOST/PORT                                                                            PATH   SERVICES            PORT    TERMINATION          WILDCARD
-...
-prometheus-k8s      prometheus-k8s-openshift-monitoring.apps.7919-681139.cor00005-2.cna.ukcloud.com             prometheus-k8s      web     reencrypt/Redirect   None
-thanos-querier      thanos-querier-openshift-monitoring.apps.7919-681139.cor00005-2.cna.ukcloud.com             thanos-querier      web     reencrypt/Redirect   None
+NAME                      HOST/PORT                                                       PATH        SERVICES            PORT   TERMINATION          WILDCARD
+alertmanager-main         alertmanager-main-openshift-monitoring.apps-crc.testing         /api        alertmanager-main   web    reencrypt/Redirect   None
+prometheus-k8s            prometheus-k8s-openshift-monitoring.apps-crc.testing            /api        prometheus-k8s      web    reencrypt/Redirect   None
+prometheus-k8s-federate   prometheus-k8s-federate-openshift-monitoring.apps-crc.testing   /federate   prometheus-k8s      web    reencrypt/Redirect   None
+thanos-querier            thanos-querier-openshift-monitoring.apps-crc.testing            /api        thanos-querier      web    reencrypt/Redirect   None
 ```
-
-- Propmetheus: http://prometheus-k8s-openshift-monitoring.apps.7919-681139.cor00005-2.cna.ukcloud.com
-- Prometheus metrics: http://prometheus-k8s-openshift-monitoring.apps.7919-681139.cor00005-2.cna.ukcloud.com/metrics
-- Thanos: http://thanos-querier-openshift-monitoring.apps.7919-681139.cor00005-2.cna.ukcloud.com
 
 ## 9. Access Hazelcast metrics
 
@@ -270,13 +314,35 @@ Expose the metrics service.
 oc get svc
 ```
 
+- Hazelcast OSS
+
+```console
+NAME                          TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)                        AGE
+oc-helm-hazelcast             ClusterIP      None           <none>        5701/TCP                       12m
+oc-helm-hazelcast-mancenter   LoadBalancer   10.217.4.199   <pending>     8080:30902/TCP,443:31588/TCP   12m
+oc-helm-hazelcast-metrics     ClusterIP      10.217.5.160   <none>        8080/TCP                       12m
+```
+
+```bash
+oc expose svc oc-helm-hazelcast-metrics
+oc get route
+```
+
 Output:
+
+```console
+NAME                          HOST/PORT                                              PATH   SERVICES                      PORT      TERMINATION   WILDCARD
+oc-helm-hazelcast-mancenter   oc-helm-hazelcast-mancenter-oc-helm.apps-crc.testing          oc-helm-hazelcast-mancenter   http                    None
+oc-helm-hazelcast-metrics     oc-helm-hazelcast-metrics-oc-helm.apps-crc.testing            oc-helm-hazelcast-metrics     metrics                 None
+```
+
+- Hazelcast Enterprise
 
 ```console
 NAME                                     TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)                        AGE
 oc-helm-hazelcast-enterprise             ClusterIP      None             <none>        5701/TCP                       50m
-oc-helm-hazelcast-enterprise-mancenter   LoadBalancer   172.30.2.240     <pending>     8080:30263/TCP,443:31951/TCP   50m
-oc-helm-hazelcast-enterprise-metrics     ClusterIP      172.30.152.152   <none>        8080/TCP                       50m
+oc-helm-hazelcast-enterprise-mancenter   LoadBalancer   10.217.4.199     <pending>     8080:30263/TCP,443:31951/TCP   50m
+oc-helm-hazelcast-enterprise-metrics     ClusterIP      10.217.5.160     <none>        8080/TCP                       50m
 ```
 
 ```bash
@@ -287,16 +353,13 @@ oc get route
 Output:
 
 ```console
-NAME                                   HOST/PORT                                                                                  PATH   SERVICES                               PORT      TERMINATION   WILDCARD
-oc-helm-hazelcast-enterprise-metrics   oc-helm-hazelcast-enterprise-metrics-oc-helm.apps.7919-681139.cor00005-2.cna.ukcloud.com          oc-helm-hazelcast-enterprise-metrics   metrics                 None
+NAME                                   HOST/PORT                                                       PATH   SERVICES                               PORT      TERMINATION   WILDCARD
+oc-helm-hazelcast-enterprise-metrics   oc-helm-hazelcast-enterprise-metrics-oc-helm.apps-crc.testing          oc-helm-hazelcast-enterprise-metrics   metrics                 None
 ```
-
-- Hazelcast metrics: http://oc-helm-hazelcast-enterprise-metrics-oc-helm.apps.7919-681139.cor00005-2.cna.ukcloud.com
 
 ## 10. Teardown
 
-```bash
-# Stop Hazelcast first then delete the following.
+```bash # Stop Hazelcast first then delete the following.
 oc delete -f prometheus/service-monitor.yaml
 oc delete -f prometheus/custom-metrics-role.yaml
 ```

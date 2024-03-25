@@ -9,7 +9,7 @@
 
 This bundle deploys Hazelcast using Helm Charts with Prometheus metrics enabled. It also includes the PadoGrid container for ingesting mock data into the Hazelcast cluster.
 
-For Prometheus instructions please see the following link: [Configuring Prometheus Metrics](README-PROM.md).
+For Prometheus instructions, please see the following link: [Configuring Prometheus Metrics](https://github.com/padogrid/bundle-hazelcast-3n4n5-k8s-oc_helm/blob/master/README-PROM.md).
 
 ## Installing Bundle
 
@@ -181,6 +181,8 @@ Watch pods.
 oc get pods -w
 ```
 
+### 4.1.1. Hazelcast Management Center
+
 View the Hazelcast services.
 
 ```bash
@@ -194,6 +196,10 @@ NAME                          TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(
 oc-helm-hazelcast             ClusterIP      None            <none>        5701/TCP                       8s
 oc-helm-hazelcast-mancenter   LoadBalancer   172.30.239.38   <pending>     8080:30974/TCP,443:30853/TCP   8s
 ```
+
+We can open Management Center via HTTP or HTTPS. Follow the instructions in one of the subsequent sections.
+
+#### 4.1.1.1. HTTP
 
 Run `oc expose svc` to expose services.
 
@@ -334,12 +340,16 @@ openssl req -newkey rsa:4096 -x509 -sha256 -days 365 -nodes \
 
 Now, expose the management center service with the edge termination. Let's assign the hostname to `mancenter.demo.com` as follows.
 
+- Hazelcast OSS
+
 ```bash
-# Hazelcast OSS
 oc create route edge tls-mancenter --service=oc-helm-hazelcast-mancenter \
     --hostname=mancenter.demo.com --port 8080 --cert etc/tls/tls.crt --key etc/tls/tls.key
+```
 
-# Hazelcast Enterprise
+- Hazelcast Enterprise
+
+```bash
 oc create route edge tls-mancenter --service=oc-helm-hazelcast-enterprise-mancenter \
     --hostname=mancenter.demo.com --port 8080 --cert etc/tls/tls.crt --key etc/tls/tls.key
 ```
@@ -361,6 +371,16 @@ Run `oc get route` to get the Management Center URL:
 ```bash
 oc get route
 ```
+
+- Hazelcast OSS
+
+```console
+NAME            HOST/PORT            PATH   SERVICES                      PORT   TERMINATION   WILDCARD
+tls-mancenter   mancenter.demo.com          oc-helm-hazelcast-mancenter   8080   edge          None
+```
+
+- Hazelcast Enterprise
+
 
 ```console
 NAME            HOST/PORT            PATH   SERVICES                                 PORT   TERMINATION   WILDCARD
